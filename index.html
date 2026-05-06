@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TCG Daily Jobs</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --border: #d0d0d0;
+    --bg: #f7f6f3;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --muted: #999;
+    --cat: #333;
+    --subcat: #555;
+    --item: #444;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px 20px 48px;
+    min-height: 100vh;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  header h1 {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.5rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  header .date {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+  .toolbar {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .toolbar button {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    background: white;
+    color: #555;
+    transition: background 0.15s, color 0.15s;
+  }
+  .toolbar button:hover { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+  .toolbar button.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    max-width: 1500px;
+    margin: 0 auto;
+  }
+
+  .job-card {
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .job-header {
+    border-bottom: 1.5px solid var(--border);
+    padding: 10px 12px;
+  }
+  .job-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 7px;
+  }
+  .job-field {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 3px;
+  }
+  .job-field label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    min-width: 56px;
+    flex-shrink: 0;
+  }
+  .job-field input {
+    flex: 1;
+    border: none;
+    border-bottom: 1px solid #e0e0e0;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    color: var(--text);
+    background: transparent;
+    padding: 1px 2px;
+    min-width: 0;
+  }
+  .job-field input:focus { border-bottom-color: #999; }
+  .job-field input::placeholder { color: #d0d0d0; }
+
+  .job-body { padding: 10px 12px; }
+
+  .category { margin-bottom: 12px; }
+
+  .cat-header {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #e8e8e8;
+    padding-bottom: 3px;
+    margin-bottom: 6px;
+    gap: 4px;
+  }
+  .cat-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--cat);
+    flex: 1;
+    outline: none;
+    background: transparent;
+    border: none;
+    min-width: 0;
+    cursor: default;
+  }
+  body.edit-mode .cat-title { cursor: text; }
+
+  .subcategory { margin-bottom: 7px; padding-left: 2px; }
+  .sub-header { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; }
+  .sub-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--subcat);
+    outline: none;
+    background: transparent;
+    border: none;
+    flex: 1;
+    min-width: 0;
+    font-family: 'DM Sans', sans-serif;
+    cursor: default;
+  }
+  body.edit-mode .sub-title { cursor: text; }
+
+  .items { list-style: none; padding-left: 8px; }
+  .item-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 0;
+  }
+  .item-bullet { color: var(--muted); font-size: 0.7rem; flex-shrink: 0; user-select: none; }
+  .item-input {
+    font-size: 0.68rem;
+    color: var(--item);
+    outline: none;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    flex: 1;
+    min-width: 0;
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.6;
+    cursor: default;
+    pointer-events: none;
+  }
+  body.edit-mode .item-input {
+    cursor: text;
+    pointer-events: auto;
+  }
+  body.edit-mode .item-input:focus { border-bottom-color: #ddd; }
+  .item-input::placeholder { color: #ccc; }
+
+  /* Edit-mode-only controls */
+  .edit-only { display: none !important; }
+  body.edit-mode .edit-only { display: flex !important; }
+  body.edit-mode button.edit-only { display: inline-flex !important; }
+  body.edit-mode .btn-add-cat { display: block !important; }
+  body.edit-mode .btn-add-sub,
+  body.edit-mode .btn-add-item { display: block !important; }
+
+  .btn-del {
+    background: none; border: none; cursor: pointer;
+    color: #ddd; font-size: 0.85rem; line-height: 1;
+    padding: 0 2px; flex-shrink: 0; font-family: monospace;
+    align-items: center;
+  }
+  .btn-del:hover { color: #c00; }
+
+  .btn-add-item {
+    display: none;
+    background: none; border: none; cursor: pointer;
+    font-size: 0.63rem; font-family: 'DM Mono', monospace;
+    letter-spacing: 0.04em; color: #bbb;
+    padding: 2px 0 2px 8px; text-align: left; width: 100%;
+  }
+  .btn-add-item:hover { color: #555; }
+
+  .btn-add-sub {
+    display: none;
+    background: none; border: none; cursor: pointer;
+    font-size: 0.62rem; font-family: 'DM Mono', monospace;
+    color: #bbb; padding: 2px 0; letter-spacing: 0.04em;
+  }
+  .btn-add-sub:hover { color: #555; }
+
+  .btn-add-cat {
+    display: none;
+    background: none;
+    border: 1px dashed #e0e0e0;
+    border-radius: 3px; cursor: pointer;
+    font-size: 0.62rem; font-family: 'DM Mono', monospace;
+    color: #bbb; padding: 4px 8px; width: 100%;
+    text-align: left; margin-top: 4px; letter-spacing: 0.04em;
+  }
+  .btn-add-cat:hover { color: #555; border-color: #bbb; }
+
+  @media print {
+    body { background: white; padding: 10px; }
+    .toolbar { display: none !important; }
+    .edit-only { display: none !important; }
+    .btn-add-item, .btn-add-sub, .btn-add-cat { display: none !important; }
+    .board { gap: 8px; }
+    .job-card { border: 1px solid #bbb; }
+    header h1 { font-size: 1.1rem; }
+    @page { size: landscape; margin: 0.35in; }
+  }
+
+  @media (max-width: 900px) {
+    .board { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>TCG Daily Jobs</h1>
+  <div class="date" id="date-display"></div>
+  <div class="toolbar">
+    <button id="btn-edit" onclick="toggleEdit()">Edit</button>
+    <button onclick="clearJobs()">Clear Jobs</button>
+    <button onclick="window.print()">Print</button>
+  </div>
+</header>
+
+<div class="board" id="board"></div>
+
+<script>
+document.getElementById('date-display').textContent =
+  new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+const DEFAULT_SECTIONS = [
+  { cat: "Solar Install", subs: [
+    { name: "Panels & Mounting", items: ["Panel placement & layout","Roof gland / penetrations","Brackets & hardware torqued","Panel wiring confirmed"] },
+    { name: "Charge Controller",  items: ["MPPT mounted & ventilated","PV input wiring & fuse","Controller programmed","BMS comms configured"] },
+    { name: "Battery Bank",       items: ["Battery type & capacity","Cables sized & lugged","Busbars / fuse block","SOC display wired"] },
+    { name: "System Check",       items: ["OC voltage verified","Charge current under load","All terminations inspected","Customer walkthrough done"] },
+  ]},
+  { cat: "Electrical", subs: [
+    { name: "12V DC Distribution", items: ["Main fuse / breaker sized","Fuse block installed & labeled","Star ground established","Wire loom secured"] },
+    { name: "AC / Inverter",        items: ["Inverter sized & mounted","Inverter cables & fuse","Shore power inlet wired","GFCI outlets tested"] },
+    { name: "Alternator / DC-DC",   items: ["B2B charger installed","Charge wire from alt run","Isolator / relay configured","Charge rate verified"] },
+  ]},
+  { cat: "Mechanical", subs: [
+    { name: "Platform & Storage", items: ["Bed / platform framed","Drawer slides adjusted","Compartments secured","Weight distribution OK"] },
+    { name: "Roof & Exterior",    items: ["Roof rack installed","Sealant at penetrations","Vent fan / skylight mounted","Exterior panels aligned"] },
+  ]},
+  { cat: "Water & HVAC", subs: [
+    { name: "Plumbing", items: ["Fresh tank mounted","12V pump primed","Lines run & fittings tight","Drain / grey tank connected"] },
+    { name: "Climate",  items: ["Vent fan wired & tested","Heater mounted","Thermostat configured","CO detector installed"] },
+  ]},
+  { cat: "Final QC", subs: [
+    { name: "Pre-Delivery", items: ["All systems tested","Interior cleaned","Wiring diagram provided","Customer sign-off"] },
+  ]},
+];
+
+// ── Save / load job header fields (session only) ──────────────
+function saveFields() {
+  const data = [];
+  for (let i = 1; i <= 4; i++) {
+    data.push({
+      customer: document.getElementById(`j${i}-customer`)?.value || '',
+      vehicle:  document.getElementById(`j${i}-vehicle`)?.value  || '',
+      tech:     document.getElementById(`j${i}-tech`)?.value     || '',
+    });
+  }
+  try { sessionStorage.setItem('tcg_jobs', JSON.stringify(data)); } catch {}
+}
+
+function loadFields() {
+  try { return JSON.parse(sessionStorage.getItem('tcg_jobs') || 'null'); } catch { return null; }
+}
+
+// ── Render helpers ────────────────────────────────────────────
+function makeItem(text) {
+  const li = document.createElement('li');
+  li.className = 'item-row';
+
+  const bullet = document.createElement('span');
+  bullet.className = 'item-bullet';
+  bullet.textContent = '–';
+
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.className = 'item-input';
+  inp.value = text;
+  inp.placeholder = 'Task item...';
+  inp.readOnly = true;
+
+  const del = document.createElement('button');
+  del.className = 'btn-del edit-only';
+  del.textContent = '×';
+  del.onclick = () => li.remove();
+
+  li.appendChild(bullet);
+  li.appendChild(inp);
+  li.appendChild(del);
+  return li;
+}
+
+function makeSubcategory(sub) {
+  const wrap = document.createElement('div');
+  wrap.className = 'subcategory';
+
+  const hdr = document.createElement('div');
+  hdr.className = 'sub-header';
+
+  const title = document.createElement('div');
+  title.className = 'sub-title';
+  title.contentEditable = 'false';
+  title.textContent = sub.name;
+
+  const del = document.createElement('button');
+  del.className = 'btn-del edit-only';
+  del.textContent = '×';
+  del.onclick = () => wrap.remove();
+
+  hdr.appendChild(title);
+  hdr.appendChild(del);
+  wrap.appendChild(hdr);
+
+  const ul = document.createElement('ul');
+  ul.className = 'items';
+  sub.items.forEach(it => ul.appendChild(makeItem(it)));
+
+  const addItem = document.createElement('button');
+  addItem.className = 'btn-add-item';
+  addItem.textContent = '+ add item';
+  addItem.onclick = () => {
+    const li = makeItem('');
+    ul.insertBefore(li, addItem);
+    // If in edit mode, make the input active
+    const inp = li.querySelector('.item-input');
+    inp.readOnly = false;
+    inp.focus();
+  };
+  ul.appendChild(addItem);
+  wrap.appendChild(ul);
+  return wrap;
+}
+
+function makeCategory(section) {
+  const catEl = document.createElement('div');
+  catEl.className = 'category';
+
+  const hdr = document.createElement('div');
+  hdr.className = 'cat-header';
+
+  const title = document.createElement('div');
+  title.className = 'cat-title';
+  title.contentEditable = 'false';
+  title.textContent = section.cat;
+
+  const del = document.createElement('button');
+  del.className = 'btn-del edit-only';
+  del.textContent = '×';
+  del.onclick = () => catEl.remove();
+
+  hdr.appendChild(title);
+  hdr.appendChild(del);
+  catEl.appendChild(hdr);
+
+  section.subs.forEach(sub => catEl.appendChild(makeSubcategory(sub)));
+
+  const addSub = document.createElement('button');
+  addSub.className = 'btn-add-sub';
+  addSub.textContent = '+ add subcategory';
+  addSub.onclick = () => {
+    const newSub = makeSubcategory({ name: 'New Subcategory', items: [] });
+    catEl.insertBefore(newSub, addSub);
+    const t = newSub.querySelector('.sub-title');
+    t.contentEditable = 'true';
+    t.focus();
+    // select all
+    const range = document.createRange();
+    range.selectNodeContents(t);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+  };
+  catEl.appendChild(addSub);
+
+  return catEl;
+}
+
+function renderBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  const saved = loadFields();
+
+  for (let i = 1; i <= 4; i++) {
+    const card = document.createElement('div');
+    card.className = 'job-card';
+
+    // Header
+    const hdr = document.createElement('div');
+    hdr.className = 'job-header';
+    hdr.innerHTML = `
+      <div class="job-num">Job ${i}</div>
+      <div class="job-field"><label>Customer</label><input id="j${i}-customer" placeholder="Name" autocomplete="off"></div>
+      <div class="job-field"><label>Vehicle</label><input id="j${i}-vehicle" placeholder="Year / Make / Model" autocomplete="off"></div>
+      <div class="job-field"><label>Tech</label><input id="j${i}-tech" placeholder="Initials" autocomplete="off"></div>
+    `;
+    card.appendChild(hdr);
+
+    // Restore saved fields
+    if (saved?.[i-1]) {
+      setTimeout(() => {
+        document.getElementById(`j${i}-customer`).value = saved[i-1].customer;
+        document.getElementById(`j${i}-vehicle`).value  = saved[i-1].vehicle;
+        document.getElementById(`j${i}-tech`).value     = saved[i-1].tech;
+      }, 0);
+    }
+
+    // Body
+    const body = document.createElement('div');
+    body.className = 'job-body';
+    DEFAULT_SECTIONS.forEach(sec => body.appendChild(makeCategory(sec)));
+
+    // Add category button
+    const addCat = document.createElement('button');
+    addCat.className = 'btn-add-cat';
+    addCat.textContent = '+ add category';
+    addCat.onclick = () => {
+      const newCat = makeCategory({ cat: 'New Category', subs: [] });
+      body.insertBefore(newCat, addCat);
+      const t = newCat.querySelector('.cat-title');
+      t.contentEditable = 'true';
+      t.focus();
+      const range = document.createRange();
+      range.selectNodeContents(t);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+    };
+    body.appendChild(addCat);
+
+    card.appendChild(body);
+    board.appendChild(card);
+  }
+
+  // Auto-save header fields
+  document.querySelectorAll('.job-field input').forEach(inp => {
+    inp.addEventListener('input', saveFields);
+  });
+}
+
+// ── Edit mode ─────────────────────────────────────────────────
+let editMode = false;
+
+function toggleEdit() {
+  editMode = !editMode;
+  document.body.classList.toggle('edit-mode', editMode);
+  const btn = document.getElementById('btn-edit');
+  btn.classList.toggle('active', editMode);
+  btn.textContent = editMode ? 'Done' : 'Edit';
+
+  // Toggle contentEditable on category / sub titles
+  document.querySelectorAll('.cat-title, .sub-title').forEach(el => {
+    el.contentEditable = editMode ? 'true' : 'false';
+  });
+
+  // Toggle item inputs
+  document.querySelectorAll('.item-input').forEach(el => {
+    el.readOnly = !editMode;
+  });
+}
+
+function clearJobs() {
+  if (!confirm('Clear all customer, vehicle, and tech fields?')) return;
+  for (let i = 1; i <= 4; i++) {
+    ['customer','vehicle','tech'].forEach(f => {
+      const el = document.getElementById(`j${i}-${f}`);
+      if (el) el.value = '';
+    });
+  }
+  try { sessionStorage.removeItem('tcg_jobs'); } catch {}
+}
+
+renderBoard();
+</script>
+</body>
+</html>
