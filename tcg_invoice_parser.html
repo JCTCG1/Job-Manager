@@ -1,128 +1,156 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TCG Invoice Parser</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --border: #d0d0d0; --bg: #f7f6f3; --card-bg: #ffffff;
-    --text: #1a1a1a; --muted: #999; --cat: #333; --subcat: #555; --item: #444; --accent: #1a1a1a;
-  }
 
-  /* ── Auth gate ── */
-  #auth-gate {
-    display: flex; align-items: center; justify-content: center;
-    min-height: 100vh; background: var(--bg);
-  }
-  .auth-box {
-    background: white; border: 1.5px solid var(--border); border-radius: 6px;
-    padding: 40px 36px; text-align: center; max-width: 340px; width: 100%;
-  }
-  .auth-box h1 { font-family: 'DM Mono', monospace; font-size: 1.1rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
-  .auth-box p { font-size: 0.75rem; color: var(--muted); margin-bottom: 28px; font-family: 'DM Mono', monospace; letter-spacing: 0.04em; }
-  .btn-google { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 10px 16px; border: 1.5px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500; color: #333; transition: background 0.15s; }
-  .btn-google:hover { background: #f5f5f5; }
-  .auth-error { margin-top: 14px; font-family: 'DM Mono', monospace; font-size: 0.68rem; color: #c00; display: none; }
+:root {
+–bg:       #1c1c1c;
+–surface:  #252525;
+–card:     #2c2c2c;
+–border:   #3a3a3a;
+–border-l: #484848;
+–teal:     #4a9e8e;
+–orange:   #c8763a;
+–text:     #ede8e0;
+–muted:    #7a756e;
+–light:    #b0a898;
+–cat:      #4a9e8e;
+–subcat:   #a09888;
+–item:     #c0b8a8;
+–accent:   #4a9e8e;
+}
 
-  #app { display: none; }
+body { font-family: ‘DM Sans’, sans-serif; background: var(–bg); color: var(–text); min-height: 100vh; padding: 0 0 48px; }
 
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); padding: 24px 20px 48px; min-height: 100vh; }
+/* ── Auth gate ── */
+#auth-gate { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(–bg); }
+.auth-box { background: var(–surface); border: 1px solid var(–border); border-radius: 4px; padding: 48px 40px; text-align: center; max-width: 360px; width: 100%; }
+.auth-box h1 { font-family: ‘Bebas Neue’, sans-serif; font-size: 2.2rem; letter-spacing: 0.12em; color: var(–text); margin-bottom: 4px; }
+.auth-box h1 span { color: var(–teal); }
+.auth-box p { font-family: ‘DM Mono’, monospace; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(–muted); margin-bottom: 32px; }
+.btn-google { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 11px 16px; border: 1px solid var(–border-l); border-radius: 3px; background: var(–card); cursor: pointer; font-family: ‘DM Sans’, sans-serif; font-size: 0.82rem; font-weight: 500; color: var(–text); transition: border-color 0.15s, background 0.15s; }
+.btn-google:hover { border-color: var(–teal); background: #333; }
+.btn-google svg { flex-shrink: 0; }
+.auth-error { margin-top: 14px; font-family: ‘DM Mono’, monospace; font-size: 0.68rem; color: #e07060; display: none; }
 
-  header { text-align: center; margin-bottom: 28px; }
-  header h1 { font-family: 'DM Mono', monospace; font-size: 1.5rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; }
-  header .sub { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-top: 4px; letter-spacing: 0.05em; }
-  .top-bar { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
-  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; display: inline-block; transition: background 0.3s; }
-  .sync-dot.live { background: #2ecc71; box-shadow: 0 0 6px #2ecc71; }
-  .sync-dot.error { background: #e74c3c; }
-  .sync-label { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted); letter-spacing: 0.04em; }
-  .user-info { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted); }
-  .btn-signout { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; background: none; border: 1px solid #ddd; border-radius: 3px; padding: 3px 10px; cursor: pointer; color: #888; }
-  .btn-signout:hover { background: #f0f0f0; }
+#app { display: none; }
 
-  .input-panel { max-width: 820px; margin: 0 auto 32px; background: white; border: 1.5px solid var(--border); border-radius: 4px; padding: 20px; }
-  .input-panel h2 { font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
-  .fields-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-  .field-group { display: flex; flex-direction: column; gap: 4px; }
-  .field-group label { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
-  .field-group input { border: 1px solid #e0e0e0; border-radius: 3px; padding: 6px 8px; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; outline: none; color: var(--text); }
-  .field-group input:focus { border-color: #999; }
-  .field-group input::placeholder { color: #ccc; }
+/* ── Header ── */
+header { background: #141414; border-bottom: 1px solid var(–border); padding: 14px 24px; text-align: center; }
+header h1 { font-family: ‘Bebas Neue’, sans-serif; font-size: 2rem; letter-spacing: 0.14em; color: var(–text); line-height: 1; }
+header h1 span { color: var(–teal); }
+header .sub { font-family: ‘DM Mono’, monospace; font-size: 0.65rem; color: var(–muted); margin-top: 4px; letter-spacing: 0.08em; text-transform: uppercase; }
+.top-bar { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+.sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(–border-l); display: inline-block; transition: background 0.3s; }
+.sync-dot.live { background: var(–teal); box-shadow: 0 0 5px var(–teal); }
+.sync-dot.error { background: #e07060; }
+.sync-label { font-family: ‘DM Mono’, monospace; font-size: 0.6rem; color: var(–muted); letter-spacing: 0.04em; }
+.user-info { font-family: ‘DM Mono’, monospace; font-size: 0.58rem; color: var(–muted); background: var(–surface); border: 1px solid var(–border); border-radius: 20px; padding: 3px 10px; }
+.btn-signout { font-family: ‘DM Mono’, monospace; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; background: none; border: 1px solid var(–border-l); border-radius: 2px; padding: 4px 12px; cursor: pointer; color: var(–muted); }
+.btn-signout:hover { border-color: var(–muted); color: var(–text); }
 
-  textarea { width: 100%; min-height: 160px; border: 1px solid #e0e0e0; border-radius: 3px; padding: 10px; font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--text); resize: vertical; outline: none; background: #fafafa; line-height: 1.6; }
-  textarea:focus { border-color: #999; background: white; }
-  textarea::placeholder { color: #ccc; }
+/* ── Input panel ── */
+.page-wrap { padding: 24px 20px; max-width: 900px; margin: 0 auto; }
+.input-panel { background: var(–surface); border: 1px solid var(–border); border-radius: 4px; padding: 20px; margin-bottom: 24px; }
+.input-panel h2 { font-family: ‘DM Mono’, monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(–muted); margin-bottom: 12px; }
+.fields-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.field-group { display: flex; flex-direction: column; gap: 4px; }
+.field-group label { font-family: ‘DM Mono’, monospace; font-size: 0.6rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: var(–muted); }
+.field-group input { border: 1px solid var(–border-l); border-radius: 2px; padding: 7px 8px; font-family: ‘DM Sans’, sans-serif; font-size: 0.78rem; outline: none; color: var(–text); background: var(–card); transition: border-color 0.15s; }
+.field-group input:focus { border-color: var(–teal); }
+.field-group input::placeholder { color: #4a4a4a; }
 
-  .parse-row { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
-  .btn-primary { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 8px 20px; border-radius: 3px; cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: white; transition: opacity 0.15s; }
-  .btn-primary:hover { opacity: 0.8; }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-secondary { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 8px 16px; border-radius: 3px; cursor: pointer; border: 1px solid #ccc; background: white; color: #555; transition: background 0.15s; }
-  .btn-secondary:hover { background: #f0f0f0; }
-  .btn-green { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 8px 20px; border-radius: 3px; cursor: pointer; border: 1px solid #27ae60; background: #27ae60; color: white; transition: opacity 0.15s; }
-  .btn-green:hover { opacity: 0.85; }
-  .btn-green:disabled { opacity: 0.4; cursor: not-allowed; }
+textarea { width: 100%; min-height: 160px; border: 1px solid var(–border-l); border-radius: 2px; padding: 10px; font-family: ‘DM Mono’, monospace; font-size: 0.72rem; color: var(–text); resize: vertical; outline: none; background: var(–card); line-height: 1.6; transition: border-color 0.15s; }
+textarea:focus { border-color: var(–teal); }
+textarea::placeholder { color: #4a4a4a; }
 
-  .status { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 0.04em; }
-  .status.loading { color: #888; }
-  .status.error { color: #c00; }
-  .status.done { color: #2a7a2a; }
+.parse-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
 
-  .result-area { max-width: 960px; margin: 0 auto; }
-  .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .result-header h2 { font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-  .result-actions { display: flex; gap: 8px; }
-  .job-card { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 4px; overflow: hidden; }
-  .job-header { border-bottom: 1.5px solid var(--border); padding: 12px 16px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-  .job-info-item { display: flex; flex-direction: column; gap: 2px; }
-  .job-info-item .label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-  .job-info-item .value { font-size: 0.8rem; font-weight: 600; color: var(--text); }
-  .job-body { padding: 14px 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-  .cat-title { font-family: 'DM Mono', monospace; font-size: 0.68rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--cat); border-bottom: 1px solid #e8e8e8; padding-bottom: 3px; margin-bottom: 7px; }
-  .subcategory { margin-bottom: 8px; padding-left: 2px; }
-  .sub-title { font-size: 0.7rem; font-weight: 600; color: var(--subcat); margin-bottom: 4px; }
-  .items { list-style: none; padding-left: 8px; }
-  .items li { display: flex; align-items: flex-start; gap: 5px; font-size: 0.7rem; color: var(--item); line-height: 1.6; padding: 1px 0; }
-  .items li::before { content: '–'; color: var(--muted); flex-shrink: 0; }
+.btn-primary { font-family: ‘DM Mono’, monospace; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 8px 20px; border-radius: 2px; cursor: pointer; border: 1px solid var(–teal); background: var(–teal); color: #fff; transition: opacity 0.15s; }
+.btn-primary:hover { opacity: 0.85; }
+.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
 
-  .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #ddd; border-top-color: #555; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 4px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+.btn-secondary { font-family: ‘DM Mono’, monospace; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 8px 16px; border-radius: 2px; cursor: pointer; border: 1px solid var(–border-l); background: transparent; color: var(–light); transition: all 0.15s; }
+.btn-secondary:hover { border-color: var(–muted); color: var(–text); }
 
-  .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.06em; border: 1.5px dashed #e0e0e0; border-radius: 4px; }
+.btn-green { font-family: ‘DM Mono’, monospace; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 8px 20px; border-radius: 2px; cursor: pointer; border: 1px solid var(–orange); background: var(–orange); color: #fff; transition: opacity 0.15s; }
+.btn-green:hover { opacity: 0.85; }
+.btn-green:disabled { opacity: 0.35; cursor: not-allowed; }
 
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: white; border-radius: 6px; padding: 24px; width: 340px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
-  .modal h3 { font-family: 'DM Mono', monospace; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; color: var(--text); }
-  .slot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-  .slot-btn { font-family: 'DM Mono', monospace; font-size: 0.7rem; padding: 10px; border: 1.5px solid var(--border); border-radius: 4px; background: white; cursor: pointer; text-align: left; transition: border-color 0.15s; }
-  .slot-btn:hover { border-color: #1a1a1a; background: #f5f5f5; }
-  .slot-btn .slot-num { font-weight: 600; display: block; margin-bottom: 2px; }
-  .slot-btn .slot-name { font-size: 0.62rem; color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .slot-btn.occupied { border-color: #e0c860; }
-  .modal-cancel { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; background: none; border: 1px solid #ddd; border-radius: 3px; padding: 6px 14px; cursor: pointer; color: #888; }
-  .modal-cancel:hover { background: #f5f5f5; }
+.status { font-family: ‘DM Mono’, monospace; font-size: 0.65rem; color: var(–muted); letter-spacing: 0.04em; }
+.status.loading { color: var(–light); }
+.status.error   { color: #e07060; }
+.status.done    { color: var(–teal); }
 
-  @media print {
-    #auth-gate { display: none !important; }
-    body { background: white; padding: 12px; }
-    .input-panel { display: none; }
-    .result-actions { display: none; }
-    .result-header h2 { display: none; }
-    .job-card { border: 1px solid #bbb; }
-    @page { size: landscape; margin: 0.4in; }
-  }
+/* ── Result card ── */
+.result-area { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+.result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.result-header h2 { font-family: ‘Bebas Neue’, sans-serif; font-size: 1rem; letter-spacing: 0.12em; color: var(–muted); }
+.result-actions { display: flex; gap: 8px; }
+.job-card { background: var(–card); border: 1px solid var(–border); border-radius: 3px; overflow: hidden; }
+.job-header { background: #222; border-bottom: 1px solid var(–border); padding: 14px 16px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.job-info-item { display: flex; flex-direction: column; gap: 3px; }
+.job-info-item .label { font-family: ‘DM Mono’, monospace; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(–muted); }
+.job-info-item .value { font-family: ‘Bebas Neue’, sans-serif; font-size: 1rem; letter-spacing: 0.06em; color: var(–text); }
+.job-body { padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.cat-title { font-family: ‘DM Mono’, monospace; font-size: 0.62rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(–teal); border-bottom: 1px solid var(–border); padding-bottom: 4px; margin-bottom: 8px; }
+.subcategory { margin-bottom: 8px; padding-left: 2px; }
+.sub-title { font-size: 0.68rem; font-weight: 600; color: var(–subcat); margin-bottom: 4px; }
+.items { list-style: none; padding-left: 8px; }
+.items li { display: flex; align-items: flex-start; gap: 5px; font-size: 0.67rem; color: var(–item); line-height: 1.6; padding: 1px 0; }
+.items li::before { content: ‘–’; color: var(–orange); flex-shrink: 0; }
+
+.spinner { display: inline-block; width: 11px; height: 11px; border: 2px solid var(–border-l); border-top-color: var(–teal); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 4px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state { text-align: center; padding: 48px 20px; color: var(–muted); font-family: ‘DM Mono’, monospace; font-size: 0.68rem; letter-spacing: 0.06em; border: 1px dashed var(–border-l); border-radius: 3px; }
+
+/* ── Modal ── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(–surface); border: 1px solid var(–border-l); border-radius: 4px; padding: 24px; width: 340px; box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
+.modal h3 { font-family: ‘Bebas Neue’, sans-serif; font-size: 1.2rem; letter-spacing: 0.12em; color: var(–text); margin-bottom: 16px; }
+.slot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.slot-btn { font-family: ‘DM Mono’, monospace; font-size: 0.68rem; padding: 10px; border: 1px solid var(–border-l); border-radius: 3px; background: var(–card); cursor: pointer; text-align: left; transition: border-color 0.15s; color: var(–text); }
+.slot-btn:hover { border-color: var(–teal); background: #333; }
+.slot-btn .slot-num { font-family: ‘Bebas Neue’, sans-serif; font-size: 0.95rem; letter-spacing: 0.1em; color: var(–orange); display: block; margin-bottom: 2px; }
+.slot-btn .slot-name { font-size: 0.6rem; color: var(–muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.slot-btn.occupied { border-color: var(–orange); }
+.modal-cancel { font-family: ‘DM Mono’, monospace; font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; background: none; border: 1px solid var(–border-l); border-radius: 2px; padding: 6px 14px; cursor: pointer; color: var(–muted); }
+.modal-cancel:hover { border-color: var(–muted); color: var(–text); }
+
+@media print {
+#auth-gate { display: none !important; }
+body { background: white; padding: 12px; color: #111; }
+header { background: white; border-bottom: 1px solid #ccc; }
+header h1 { color: #111; }
+header h1 span { color: #2a7a6a; }
+.top-bar, .parse-row, .input-panel { display: none !important; }
+.result-actions { display: none; }
+.result-header h2 { display: none; }
+.job-card { background: white; border: 1px solid #bbb; }
+.job-header { background: #f5f5f5; }
+.cat-title { color: #2a7a6a; border-bottom-color: #ccc; }
+.items li::before { color: #c8763a; }
+.item, .sub-title { color: #333; }
+@page { size: landscape; margin: 0.4in; }
+}
 </style>
+
 </head>
 <body>
 
 <!-- ── Auth gate ── -->
+
 <div id="auth-gate">
   <div class="auth-box">
-    <h1>TCG Invoice Parser</h1>
+    <h1>TCG <span>Invoice Parser</span></h1>
     <p>Sign in with your TCG Google account</p>
     <button class="btn-google" id="btn-google-signin">
       <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
@@ -133,9 +161,10 @@
 </div>
 
 <!-- ── Main app ── -->
+
 <div id="app">
   <header>
-    <h1>TCG Invoice Parser</h1>
+    <h1>TCG <span>Invoice Parser</span></h1>
     <div class="sub">Paste a QuickBooks invoice → push to job board</div>
     <div class="top-bar">
       <span class="sync-dot" id="sync-dot"></span>
@@ -145,15 +174,16 @@
     </div>
   </header>
 
-  <div class="input-panel">
-    <h2>Job Info</h2>
-    <div class="fields-row">
-      <div class="field-group"><label>Customer Name</label><input id="f-customer" placeholder="e.g. John Smith" autocomplete="off"></div>
-      <div class="field-group"><label>Vehicle</label><input id="f-vehicle" placeholder="e.g. 2022 Ford F-250" autocomplete="off"></div>
-      <div class="field-group"><label>Tech</label><input id="f-tech" placeholder="Initials" autocomplete="off"></div>
-    </div>
-    <h2 style="margin-bottom:12px;">Invoice Line Items</h2>
-    <textarea id="invoice-input" placeholder="Paste your QuickBooks invoice line items here...
+  <div class="page-wrap">
+    <div class="input-panel">
+      <h2>Job Info</h2>
+      <div class="fields-row">
+        <div class="field-group"><label>Customer Name</label><input id="f-customer" placeholder="e.g. John Smith" autocomplete="off"></div>
+        <div class="field-group"><label>Vehicle</label><input id="f-vehicle" placeholder="e.g. 2022 Ford F-250" autocomplete="off"></div>
+        <div class="field-group"><label>Tech</label><input id="f-tech" placeholder="Initials" autocomplete="off"></div>
+      </div>
+      <h2 style="margin-bottom:12px;">Invoice Line Items</h2>
+      <textarea id="invoice-input" placeholder="Paste your QuickBooks invoice line items here...
 
 Example:
 Victron SmartSolar MPPT 100/30
@@ -165,13 +195,15 @@ Blue Sea 5029 ST Blade Fuse Block
 Install labor - solar system
 Roof penetration glands x4
 Wire loom and conduit
-Shore power inlet install"></textarea>
-    <div class="parse-row">
-      <button class="btn-primary" id="btn-parse" onclick="parseInvoice()">Generate Job Card</button>
-      <button class="btn-secondary" onclick="clearAll()">Clear</button>
-      <button class="btn-green" id="btn-push" onclick="openSlotPicker()" disabled>Send to Job Board →</button>
-      <span class="status" id="status"></span>
-    </div>
+Shore power inlet install”></textarea>
+<div class="parse-row">
+<button class="btn-primary" id="btn-parse" onclick="parseInvoice()">Generate Job Card</button>
+<button class="btn-secondary" onclick="clearAll()">Clear</button>
+<button class="btn-green" id="btn-push" onclick="openSlotPicker()" disabled>Send to Job Board →</button>
+<span class="status" id="status"></span>
+</div>
+</div>
+
   </div>
 
   <div class="result-area">
@@ -191,7 +223,7 @@ Shore power inlet install"></textarea>
 
 <div class="modal-overlay" id="slot-modal">
   <div class="modal">
-    <h3>Send to which job slot?</h3>
+    <h3>Send to Job Slot</h3>
     <div class="slot-grid" id="slot-grid"></div>
     <button class="modal-cancel" onclick="closeModal()">Cancel</button>
   </div>
@@ -256,7 +288,6 @@ function startListening() {
   onValue(ref(db, 'jobs'), (snapshot) => {
     const data = snapshot.val() || {};
     Object.assign(currentSlots, data);
-    // Clear slots that were removed
     for (let i = 1; i <= 4; i++) {
       if (!data[`slot${i}`]) delete currentSlots[`slot${i}`];
     }
@@ -291,12 +322,198 @@ async function parseInvoice() {
   document.getElementById('btn-parse').disabled = true;
   document.getElementById('btn-push').disabled  = true;
 
-  const prompt = `You are a truck camper and overlanding shop assistant.
-Given the following QuickBooks invoice line items, organize them into a job task card.
+  const prompt = `You are a truck camper and overlanding shop assistant at Truck Camper Garage (TCG) in San Diego. You are generating a job task card from QuickBooks invoice line items.
 
-Group the items into logical CATEGORIES (e.g. Solar Install, Electrical, Mechanical, Water & HVAC, Final QC, etc.) and SUBCATEGORIES within each (e.g. Panels & Mounting, Battery Bank, Wiring, etc.).
+Use the REFERENCE GUIDE below to generate accurate, step-by-step installation tasks for recognized products. For unrecognized items, apply the STRICT RULES.
 
-For each item, write a short task-oriented action phrase (e.g. "Install Victron MPPT 100/30" not just "Victron MPPT 100/30"). Include quantities if relevant.
+═══════════════════════════════════════════════
+TCG INSTALL REFERENCE GUIDE
+═══════════════════════════════════════════════
+
+── CAMPER DELIVERY & BED PREP ──────────────────
+Applies when: any camper unit, rubber bed mat, or bed prep items appear on invoice.
+Tasks:
+- Lay rubber bed mat (3/4" stall mat) in truck bed — trim to fit if needed
+- Verify bed dimensions and camper fit
+- Load camper onto truck — confirm alignment
+- Check all camper tie-down anchor points
+
+── TORKLIFT TIE-DOWNS (Steel Talon or Aluminum Talon) ──
+Applies when: TorkLift tie downs, Talon, or frame mount tie downs appear.
+Tasks:
+- Use TorkLift fit guide to confirm correct part number for truck make/model/year
+- Position receiver tubes at truck frame mounting points (front and rear)
+- Bolt receiver tubes to truck frame — do not over-torque
+- Slide tie-down inserts into receiver tubes
+- Verify all four mounting points are secure before loading camper
+
+── TORKLIFT FASTGUN TURNBUCKLES ────────────────
+Applies when: FastGun, FastGun Apex, turnbuckles, or SpringLoad appear.
+Tasks:
+- Assemble FastGuns per Torklift instructions (10–15 min per unit)
+- Hang upper hook from camper anchor point
+- Adjust threaded hook bolt to ~1/2" above tie-down insert
+- Close lever handle and pull down until spring tension is felt
+- Confirm O-ring sits ~1/4" below turnbuckle body (= 300 lbs tension)
+- Repeat all four corners — verify tension indicators on all units
+- Install FastGun locks if included
+
+── SOLAR PANELS (Rich Solar, Renogy, or generic) ──
+Applies when: any solar panel (100W/200W/300W/etc.) appears.
+Tasks:
+- Confirm panel placement — check for obstructions and shading
+- Mount Z-brackets or rail system to panel frame
+- Position panels on camper roof — mark mounting points
+- Drill/fasten brackets to roof — apply butyl tape and sealant at all penetrations
+- Run MC4 wiring from panels toward charge controller location
+- Confirm series or parallel wiring configuration per system design
+- Secure all wiring with loom/clips — no exposed runs
+
+── VICTRON SMARTSOLAR MPPT CHARGE CONTROLLER ──
+Applies when: Victron MPPT, SmartSolar, or charge controller appears.
+Tasks:
+- Mount controller in ventilated location — not above battery
+- Connect battery terminals FIRST (battery → BATT terminals)
+- Connect PV input wiring (panels → PV terminals)
+- Fuse PV input per Victron sizing table
+- Open VictronConnect app — verify system voltage detection
+- Set battery type (LiFePO4 for Dakota/Rich Solar lithium)
+- For LiFePO4: set absorption to 14.6V, float to 13.6V
+- Verify charging current under load
+
+── ROOF ENTRY GLAND (Solar or Starlink cable) ──
+Applies when: roof gland, cable entry, or roof penetration appears.
+Tasks:
+- Select penetration location — avoid rafters, avoid pooling areas
+- Score roof membrane with X-Acto knife before drilling
+- Drill hole sized to gland spec
+- Apply butyl tape below gland base
+- Install gland and torque per spec
+- Apply self-leveling sealant (Dicor or equivalent) over gland and fasteners
+- Route cable through gland — leave drip loop before interior entry
+- Secure cable run with clips or loom
+
+── LITHIUM BATTERY (Dakota Lithium, Rich Solar, Battle Born) ──
+Applies when: any lithium battery (LiFePO4, 100Ah, 200Ah, etc.) appears.
+Tasks:
+- Confirm battery compartment dimensions and ventilation
+- Mount battery securely — no movement under load
+- Size and lug battery cables per amperage draw
+- Connect to busbar or fuse block — fuse within 18" of battery positive
+- Configure charge controller or DC-DC charger for LiFePO4 profile
+- Verify BMS communication if applicable
+- Test SOC display or monitor
+
+── VICTRON ORION XS DC-DC CHARGER (Alternator Charging) ──
+Applies when: Victron Orion, DC-DC charger, B2B charger, or alternator charging appears.
+Tasks:
+- Disconnect remote on/off terminal before wiring
+- Run input cables from truck starter battery (fuse within 18" of positive)
+- Mount Orion close to house battery — never directly above battery
+- Connect input cables to Orion input terminals — verify polarity
+- Open VictronConnect app — set charging algorithm to LiFePO4 before connecting output
+- Connect output cables to house battery
+- Reconnect remote on/off terminal
+- Verify engine shutdown detection is active (Orion activates when alternator voltage rises)
+- Test: start engine, confirm Orion shows charging in VictronConnect
+
+── INVERTER (Rich Solar, Renogy, AIMS Power, Victron) ──
+Applies when: any inverter (pure sine, modified sine) appears.
+Tasks:
+- Select mounting location — ventilated, accessible, near battery bank
+- Mount inverter securely
+- Size and run DC input cables from battery — fuse within 18" of battery positive
+- Connect DC input cables — verify polarity
+- Wire AC output to distribution panel or outlets as needed
+- Install GFCI outlets if required
+- Test inverter under load — verify AC output voltage
+
+── BLUE SEA / MARINE 12V FUSE BLOCK ────────────
+Applies when: Blue Sea fuse block, marine fuse block, or distribution panel appears.
+Tasks:
+- Mount fuse block in accessible, dry location
+- Run positive feed from battery/busbar — fuse the feed wire
+- Connect ground to chassis ground point or negative busbar
+- Label each circuit
+- Install appropriately rated fuse per circuit draw
+- Test each circuit
+
+── WIRING, BUSBARS, HARDWARE (Generic) ─────────
+Applies when: wire, cable, lugs, busbars, connectors, hardware appear as line items.
+Tasks:
+- Size all wire per amperage and voltage drop calculations
+- Crimp/solder all lugs — heat-shrink all terminations
+- Route wiring in loom — secure every 18–24"
+- No exposed wire runs in high-movement or high-heat areas
+- Label all circuits at both ends
+
+── STARLINK MINI INSTALL ────────────────────────
+Applies when: Starlink, Starlink Mini, dish, or Starlink mount appears.
+Tasks:
+- Check Starlink app obstruction checker from intended mount location
+- Mount dish to camper roof (magnetic mount, VHB pads, or bolt-on bracket)
+- Identify cable entry point — prefer existing gland, wet bay port, or door seal gap
+- If new penetration needed: install roof gland (see Roof Entry Gland steps)
+- Route cable from dish to interior — leave drip loop at roof entry
+- Secure cable run — no loose sections that could flap at highway speed
+- Connect DC-to-DC power cable if running 12V direct (avoid inverter idle draw)
+- Power on and verify signal via Starlink app
+- Confirm mount is secure for highway travel
+
+── TV MOUNT (Interior) ──────────────────────────
+Applies when: TV, television mount, or TV install appears.
+Tasks:
+- Locate and confirm wall stud or backing behind mount location
+- Mark mounting hole locations — verify level
+- Drill pilot holes — do not drill into wiring or plumbing runs
+- Install wall mount bracket — torque to spec
+- Run power cable to nearest 120V outlet or 12V source
+- Route any HDMI/antenna cables — conceal in raceway if possible
+- Hang TV — verify weight rating of mount
+- Test: power on, verify picture, confirm secure at all tilt/swivel positions
+
+── ROOF RACK (Camper Exterior) ──────────────────
+Applies when: roof rack, crossbars, or exterior rack appears.
+Tasks:
+- Confirm roof rack fitment for specific camper model
+- Mark mounting positions — avoid roof vents, skylights, and existing penetrations
+- Apply butyl tape at all mounting feet
+- Bolt rack to roof — torque to spec
+- Apply sealant at all fastener penetrations
+- Verify rack is level and secure — no flex under load
+- Confirm load rating is appropriate for intended use
+
+── BACKUP CAMERA ────────────────────────────────
+Applies when: backup camera or rear camera appears.
+Tasks:
+- Mount camera at rear of camper/truck — confirm sightlines
+- Run camera cable from rear to cab — route through existing grommets where possible
+- Connect to factory display integration harness if applicable
+- Connect power wire to reverse light circuit (activates on reverse)
+- Test: verify image on display when in reverse
+
+── FINAL QC (All Jobs) ──────────────────────────
+Always include at the end of every job card.
+Tasks:
+- All systems function-tested
+- All wiring inspected — no exposed terminations
+- All penetrations sealed and dry
+- Interior cleaned and detailed
+- Wiring diagram / documentation provided to customer
+- Customer walkthrough complete
+- Customer sign-off obtained
+
+═══════════════════════════════════════════════
+STRICT RULES (for items NOT in reference guide)
+═══════════════════════════════════════════════
+- For unrecognized parts/products: prefix with "Install" and keep the EXACT product name as written.
+- For labor line items: keep the description exactly as written, clean up abbreviations only.
+- Never invent tasks or descriptions not explicitly stated in the line item.
+- Include quantities if present (e.g. "Install Dakota Lithium 100Ah Battery x2").
+- If a line item is unclear, prefix with "Install" and copy verbatim.
+- Do NOT include Final QC tasks more than once even if multiple categories are present.
+
+GROUP items into logical CATEGORIES and SUBCATEGORIES. Use the reference guide category names where applicable.
 
 Return ONLY valid JSON in this exact format, no explanation, no markdown:
 {
@@ -415,5 +632,6 @@ function clearAll() {
   setStatus('', '');
 }
 </script>
+
 </body>
 </html>
