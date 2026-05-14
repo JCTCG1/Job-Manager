@@ -9,15 +9,15 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:       #f5f3ef;
+    --bg:       #1c1c1c;
     --surface:  #252525;
     --card:     #2c2c2c;
     --border:   #3a3a3a;
     --border-l: #484848;
     --teal:     #4a9e8e;
     --orange:   #c8763a;
-    --text:     #ffffff;
-    --muted:    #ffffff;
+    --text:     #ede8e0;
+    --muted:    #7a756e;
     --light:    #b0a898;
     --cat:      #4a9e8e;
     --subcat:   #a09888;
@@ -317,198 +317,224 @@ async function parseInvoice() {
   document.getElementById('btn-parse').disabled = true;
   document.getElementById('btn-push').disabled  = true;
 
-  const prompt = `You are a truck camper and overlanding shop assistant at Truck Camper Garage (TCG) in San Diego. You are generating a job task card from QuickBooks invoice line items.
+  const prompt = `You are a job card generator for Truck Camper Garage (TCG), a truck camper install, service, and custom fab shop in San Diego. Generate a concise job task card from QuickBooks invoice line items.
 
-Use the REFERENCE GUIDE below to generate accurate, step-by-step installation tasks for recognized products. For unrecognized items, apply the STRICT RULES.
+IMPORTANT: Keep tasks SHORT — 3 to 5 bullet points max per subcategory. Checkpoints only, not full procedures. Every job gets a Final QC section at the end (once only).
 
-═══════════════════════════════════════════════
-TCG INSTALL REFERENCE GUIDE
-═══════════════════════════════════════════════
+Use the REFERENCE GUIDE to assign tasks to recognized items. For anything not in the guide, use the STRICT RULES.
 
-── CAMPER DELIVERY & BED PREP ──────────────────
-Applies when: any camper unit, rubber bed mat, or bed prep items appear on invoice.
-Tasks:
-- Lay rubber bed mat (3/4" stall mat) in truck bed — trim to fit if needed
-- Verify bed dimensions and camper fit
-- Load camper onto truck — confirm alignment
-- Check all camper tie-down anchor points
+── CAMPER INSTALL / BED PREP ──
+(camper unit, bed mat, Scout/Lance/FWC delivery, receiving)
+- Lay rubber bed mat — trim to fit
+- Load camper, confirm alignment and fit
+- Check all anchor points before securing
 
-── TORKLIFT TIE-DOWNS (Steel Talon or Aluminum Talon) ──
-Applies when: TorkLift tie downs, Talon, or frame mount tie downs appear.
-Tasks:
-- Use TorkLift fit guide to confirm correct part number for truck make/model/year
-- Position receiver tubes at truck frame mounting points (front and rear)
-- Bolt receiver tubes to truck frame — do not over-torque
-- Slide tie-down inserts into receiver tubes
-- Verify all four mounting points are secure before loading camper
+── TORKLIFT TIE-DOWNS ──
+(TorkLift, Talon, frame mount tie downs, ApexAnchors)
+- Confirm part number via TorkLift fit guide
+- Bolt receiver tubes to frame — front and rear
+- Insert tie-down slugs, verify all 4 points secure
 
-── TORKLIFT FASTGUN TURNBUCKLES ────────────────
-Applies when: FastGun, FastGun Apex, turnbuckles, or SpringLoad appear.
-Tasks:
-- Assemble FastGuns per Torklift instructions (10–15 min per unit)
-- Hang upper hook from camper anchor point
-- Adjust threaded hook bolt to ~1/2" above tie-down insert
-- Close lever handle and pull down until spring tension is felt
-- Confirm O-ring sits ~1/4" below turnbuckle body (= 300 lbs tension)
-- Repeat all four corners — verify tension indicators on all units
-- Install FastGun locks if included
+── TURNBUCKLES ──
+(FastGun, FastGun Apex, SpringLoad XL, turnbuckles)
+- Assemble and hang from camper anchor points
+- Tension to 300 lbs — confirm O-ring indicator at each corner
+- Install locks if included
 
-── SOLAR PANELS (Rich Solar, Renogy, or generic) ──
-Applies when: any solar panel (100W/200W/300W/etc.) appears.
-Tasks:
-- Confirm panel placement — check for obstructions and shading
-- Mount Z-brackets or rail system to panel frame
-- Position panels on camper roof — mark mounting points
-- Drill/fasten brackets to roof — apply butyl tape and sealant at all penetrations
-- Run MC4 wiring from panels toward charge controller location
-- Confirm series or parallel wiring configuration per system design
-- Secure all wiring with loom/clips — no exposed runs
+── STABLELOAD / SUMO SPRINGS ──
+(StableLoad, Sumo Springs)
+- Confirm fitment for truck make/model
+- Install per TorkLift/manufacturer spec
+- Test load response after install
 
-── VICTRON SMARTSOLAR MPPT CHARGE CONTROLLER ──
-Applies when: Victron MPPT, SmartSolar, or charge controller appears.
-Tasks:
-- Mount controller in ventilated location — not above battery
-- Connect battery terminals FIRST (battery → BATT terminals)
-- Connect PV input wiring (panels → PV terminals)
-- Fuse PV input per Victron sizing table
-- Open VictronConnect app — verify system voltage detection
-- Set battery type (LiFePO4 for Dakota/Rich Solar lithium)
-- For LiFePO4: set absorption to 14.6V, float to 13.6V
-- Verify charging current under load
+── AIR BAGS & COMPRESSOR ──
+(Air Lift, air bags, helper springs, WirelessONE, WirelessAIR, compressor)
+- Install air bag assemblies at rear axle per Air Lift instructions
+- Mount compressor, run air lines — no kinks
+- Wire compressor to power, pair remote/Bluetooth
+- Inflate to spec, test for leaks
 
-── ROOF ENTRY GLAND (Solar or Starlink cable) ──
-Applies when: roof gland, cable entry, or roof penetration appears.
-Tasks:
-- Select penetration location — avoid rafters, avoid pooling areas
-- Score roof membrane with X-Acto knife before drilling
-- Drill hole sized to gland spec
-- Apply butyl tape below gland base
-- Install gland and torque per spec
-- Apply self-leveling sealant (Dicor or equivalent) over gland and fasteners
-- Route cable through gland — leave drip loop before interior entry
-- Secure cable run with clips or loom
+NOTE: TCG does NOT perform suspension lifts, spring swaps, or shock replacements. If any line item references lift kits, springs, or shocks, output it as "Refer to North County Spring — outside TCG scope" under a Referrals category.
 
-── LITHIUM BATTERY (Dakota Lithium, Rich Solar, Battle Born) ──
-Applies when: any lithium battery (LiFePO4, 100Ah, 200Ah, etc.) appears.
-Tasks:
-- Confirm battery compartment dimensions and ventilation
-- Mount battery securely — no movement under load
-- Size and lug battery cables per amperage draw
-- Connect to busbar or fuse block — fuse within 18" of battery positive
-- Configure charge controller or DC-DC charger for LiFePO4 profile
-- Verify BMS communication if applicable
-- Test SOC display or monitor
+── 7-WAY RV CABLE & IN-BED PLUG ──
+(7-way, RV cable, in-bed plug, Lance 6-wire, brake light wiring, 3rd brake light)
+- Route and secure 7-way cable in bed
+- Install in-bed plug/connector — weatherproof
+- Connect to truck wiring — verify running lights and brake signal
+- Test all circuits
 
-── VICTRON ORION XS DC-DC CHARGER (Alternator Charging) ──
-Applies when: Victron Orion, DC-DC charger, B2B charger, or alternator charging appears.
-Tasks:
-- Disconnect remote on/off terminal before wiring
-- Run input cables from truck starter battery (fuse within 18" of positive)
-- Mount Orion close to house battery — never directly above battery
-- Connect input cables to Orion input terminals — verify polarity
-- Open VictronConnect app — set charging algorithm to LiFePO4 before connecting output
-- Connect output cables to house battery
-- Reconnect remote on/off terminal
-- Verify engine shutdown detection is active (Orion activates when alternator voltage rises)
-- Test: start engine, confirm Orion shows charging in VictronConnect
+── ALTERNATOR / DC-DC CHARGING ──
+(truck charging, DC-DC, Victron Orion, Renogy DC-DC, alternator charging, fast charging)
+- Run charge wire from engine bay to camper — fuse at source
+- Mount DC-DC charger near house battery
+- Configure for LiFePO4 or AGM as needed
+- Test: engine on → confirm charge output
 
-── INVERTER (Rich Solar, Renogy, AIMS Power, Victron) ──
-Applies when: any inverter (pure sine, modified sine) appears.
-Tasks:
-- Select mounting location — ventilated, accessible, near battery bank
-- Mount inverter securely
-- Size and run DC input cables from battery — fuse within 18" of battery positive
-- Connect DC input cables — verify polarity
-- Wire AC output to distribution panel or outlets as needed
-- Install GFCI outlets if required
-- Test inverter under load — verify AC output voltage
+── LITHIUM BATTERY ──
+(Dakota Lithium, Rich Solar battery, Expion, battle born, LiFePO4, 100Ah/200Ah/320Ah)
+- Mount and secure battery — fuse within 18" of positive
+- Connect to busbar/fuse block — verify polarity
+- Set charger profile to LiFePO4
+- Confirm BMS and SOC monitor working
 
-── BLUE SEA / MARINE 12V FUSE BLOCK ────────────
-Applies when: Blue Sea fuse block, marine fuse block, or distribution panel appears.
-Tasks:
-- Mount fuse block in accessible, dry location
-- Run positive feed from battery/busbar — fuse the feed wire
-- Connect ground to chassis ground point or negative busbar
-- Label each circuit
-- Install appropriately rated fuse per circuit draw
+── SOLAR PANELS ──
+(Rich Solar panel, solar panel, 200W/250W/300W)
+- Place panels — check shading and obstruction
+- Mount brackets, secure to roof — butyl tape and sealant at all penetrations
+- Run and connect MC4 wiring
+- Confirm series/parallel config, secure loom
+
+── MPPT SOLAR CONTROLLER ──
+(Victron MPPT, SmartSolar, Rich Solar MPPT, charge controller)
+- Mount in ventilated location
+- Wire battery first, then PV input — fuse PV
+- Set battery profile (LiFePO4: 14.6V absorption, 13.6V float)
+- Verify charge current in VictronConnect or app
+
+── ROOF ENTRY GLAND ──
+(roof gland, cable entry, roof penetration, cable gland)
+- Score membrane, drill to gland spec
+- Install gland with butyl tape — sealant over fasteners
+- Route cable, leave drip loop at entry point
+
+── INVERTER ──
+(inverter, pure sine, Rich Solar Nova, Victron inverter, AIMS)
+- Mount near battery — ventilated location
+- DC input cables sized and fused within 18" of battery
+- Wire AC output to outlets/panel
+- Test under load
+
+── TRANSFER SWITCH / SHORE POWER ──
+(transfer switch, shore power, auto transfer, 120V circuit)
+- Install transfer switch between shore/generator and inverter
+- Wire inputs and output — verify auto-switching
+- Test shore power, generator, and inverter modes
+
+── FUSE BLOCK / DISTRIBUTION ──
+(Blue Sea, fuse block, breaker panel, busbar, distribution)
+- Mount in accessible location — label all circuits
+- Fuse feed wire from battery
 - Test each circuit
 
-── WIRING, BUSBARS, HARDWARE (Generic) ─────────
-Applies when: wire, cable, lugs, busbars, connectors, hardware appear as line items.
-Tasks:
-- Size all wire per amperage and voltage drop calculations
-- Crimp/solder all lugs — heat-shrink all terminations
-- Route wiring in loom — secure every 18–24"
-- No exposed wire runs in high-movement or high-heat areas
-- Label all circuits at both ends
+── BATTERY MONITOR / SHUNT ──
+(Victron BMV, shunt, battery monitor, SmartShunt, GX Touch)
+- Install shunt on negative bus
+- Wire monitor display
+- Configure capacity and charge settings
 
-── STARLINK MINI INSTALL ────────────────────────
-Applies when: Starlink, Starlink Mini, dish, or Starlink mount appears.
-Tasks:
-- Check Starlink app obstruction checker from intended mount location
-- Mount dish to camper roof (magnetic mount, VHB pads, or bolt-on bracket)
-- Identify cable entry point — prefer existing gland, wet bay port, or door seal gap
-- If new penetration needed: install roof gland (see Roof Entry Gland steps)
-- Route cable from dish to interior — leave drip loop at roof entry
-- Secure cable run — no loose sections that could flap at highway speed
-- Connect DC-to-DC power cable if running 12V direct (avoid inverter idle draw)
-- Power on and verify signal via Starlink app
-- Confirm mount is secure for highway travel
+── WIRING / HARDWARE (generic) ──
+(wire, loom, lugs, connectors, sealant, hardware, parts)
+- Size wire per load — crimp and heat-shrink all terminations
+- Route in loom — secure every 18–24"
+- Label circuits at both ends
 
-── TV MOUNT (Interior) ──────────────────────────
-Applies when: TV, television mount, or TV install appears.
-Tasks:
-- Locate and confirm wall stud or backing behind mount location
-- Mark mounting hole locations — verify level
-- Drill pilot holes — do not drill into wiring or plumbing runs
-- Install wall mount bracket — torque to spec
-- Run power cable to nearest 120V outlet or 12V source
-- Route any HDMI/antenna cables — conceal in raceway if possible
-- Hang TV — verify weight rating of mount
-- Test: power on, verify picture, confirm secure at all tilt/swivel positions
+── STARLINK MINI ──
+(Starlink, Starlink Mini, satellite dish, Starlink mount, VHB, mag mount)
+- Check obstruction via Starlink app before mounting
+- Mount dish — magnet, VHB, or bolt-on
+- Route cable through existing gland or new penetration — drip loop at entry
+- Connect 12V DC power cable, verify signal
 
-── ROOF RACK (Camper Exterior) ──────────────────
-Applies when: roof rack, crossbars, or exterior rack appears.
-Tasks:
-- Confirm roof rack fitment for specific camper model
-- Mark mounting positions — avoid roof vents, skylights, and existing penetrations
-- Apply butyl tape at all mounting feet
-- Bolt rack to roof — torque to spec
-- Apply sealant at all fastener penetrations
-- Verify rack is level and secure — no flex under load
-- Confirm load rating is appropriate for intended use
+── BACKUP / DASH CAMERA ──
+(backup camera, WolfBox, dashcam, rear camera, camera system, mirror camera)
+- Mount camera(s) — confirm sightlines
+- Route cables — use existing grommets where possible
+- Connect to reverse circuit or hardwire kit
+- Test all camera views on display
 
-── BACKUP CAMERA ────────────────────────────────
-Applies when: backup camera or rear camera appears.
-Tasks:
-- Mount camera at rear of camper/truck — confirm sightlines
-- Run camera cable from rear to cab — route through existing grommets where possible
-- Connect to factory display integration harness if applicable
-- Connect power wire to reverse light circuit (activates on reverse)
-- Test: verify image on display when in reverse
+── ROOF RACK / CROSSBARS ──
+(roof rack, Yakima, Rhino-Rack, Thule, crossbars, rack)
+- Confirm fitment for camper model
+- Mount feet — butyl tape, sealant all penetrations
+- Torque to spec, verify level and no flex under load
 
-── FINAL QC (All Jobs) ──────────────────────────
-Always include at the end of every job card.
-Tasks:
-- All systems function-tested
+── AWNING ──
+(awning, Kammock, 270 awning, crosswing, awning bracket)
+- Fabricate/install mounting brackets as needed
+- Mount awning to camper — torque hardware
+- Test open/close operation, verify clearance
+
+── MAXXAIR / ROOF FAN ──
+(Maxxair, roof fan, roof vent, fan install)
+- Remove old vent if applicable — clean opening
+- Install fan with butyl tape and sealant
+- Wire to 12V — test all speeds and open/close
+
+── DIESEL HEATER ──
+(diesel heater, Espar, RADICA, heater install, furnace)
+- Mount heater and fuel tank — route exhaust to exterior
+- Connect fuel line, power, and thermostat/controller
+- Prime fuel system, run and verify heat output
+
+── AC UNIT ──
+(AC, air conditioner, Nomadic, Furrion, Truma, mini split, rooftop AC)
+- Cut/prep roof opening if needed — seal edges
+- Install unit, run 120V circuit from shore/inverter panel
+- Wire thermostat/controller
+- Test cooling and confirm no leaks at penetrations
+
+── TV MOUNT ──
+(TV, television, TV mount)
+- Confirm backing/stud behind mount location
+- Mount bracket, route power and HDMI
+- Hang TV, test picture and security
+
+── PLUMBING ──
+(plumbing, water pump, tank, faucet, shower, water heater, propane water heater)
+- Install/replace components per scope
+- Pressure test all connections — no leaks
+- Verify pump prime and flow
+- Test hot/cold at all fixtures
+
+── PROPANE ──
+(propane, MB Sturgis, quick disconnect, propane line, hose)
+- Install quick-disconnect or run copper line
+- Leak test all fittings with soapy water
+- Verify appliance operation
+
+── COMPOSTING TOILET ──
+(composting toilet, Cuddy Lite, Trelino, CompoCloset)
+- Mount toilet — level and secure
+- Install vent fan and route exhaust to exterior if required
+- Test operation
+
+── ROOF RACK / SOLAR ARRAY / CUSTOM FAB ──
+(aluminum frame, custom fab, aluminum platform, custom bracket, welding)
+- Fabricate per scope — confirm dimensions before cutting
+- Test fit before final weld/fastening
+- Apply sealant at all roof penetrations
+- Verify load rating and security
+
+── SUSPENSION SEALANT / ROT REPAIR ──
+(rot repair, resealing, epoxy, sealant, pirelli seal, trim repair)
+- Remove damaged material — document extent before proceeding
+- Treat/inject epoxy or apply sealant per scope
+- Allow full cure time before closing up
+- Verify water-tight before returning to customer
+
+── REPAIR (general) ──
+(repair, troubleshoot, warranty, fix, replace, swap)
+- Diagnose root cause before replacing components
+- Document findings — note any related issues found
+- Repair/replace per scope
+- Test repaired system — confirm issue resolved
+
+── FINAL QC (every job) ──
+- All installed systems tested and functional
 - All wiring inspected — no exposed terminations
-- All penetrations sealed and dry
-- Interior cleaned and detailed
-- Wiring diagram / documentation provided to customer
-- Customer walkthrough complete
-- Customer sign-off obtained
+- All roof/exterior penetrations sealed
+- Customer walkthrough complete — sign-off obtained
 
-═══════════════════════════════════════════════
-STRICT RULES (for items NOT in reference guide)
-═══════════════════════════════════════════════
-- For unrecognized parts/products: prefix with "Install" and keep the EXACT product name as written.
-- For labor line items: keep the description exactly as written, clean up abbreviations only.
-- Never invent tasks or descriptions not explicitly stated in the line item.
-- Include quantities if present (e.g. "Install Dakota Lithium 100Ah Battery x2").
-- If a line item is unclear, prefix with "Install" and copy verbatim.
-- Do NOT include Final QC tasks more than once even if multiple categories are present.
+STRICT RULES (for anything not matched above):
+- Parts/products not in guide: prefix "Install" + exact product name as written
+- Labor lines: copy description verbatim, clean abbreviations only
+- Never invent tasks not stated in the invoice
+- Include quantities if listed (e.g. "Install Rich Solar 100Ah Battery x2")
+- Retail/merch items (hats, stickers, tees, koozies, MODL tools): include as "Retail sale — [item name]" under a "Retail / Accessories" category, no install steps
+- Admin items (CC fees, shipping, storage, tax, discounts): OMIT entirely
+- Final QC appears ONCE only, at the end
 
-GROUP items into logical CATEGORIES and SUBCATEGORIES. Use the reference guide category names where applicable.
+GROUP into logical CATEGORIES and SUBCATEGORIES. Keep subcategories tight — combine related items rather than making a subcategory for every single line item.
 
 Return ONLY valid JSON in this exact format, no explanation, no markdown:
 {
