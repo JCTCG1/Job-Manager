@@ -235,23 +235,10 @@ const db       = getDatabase(app);
 const auth     = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-onAuthStateChanged(auth, (user) => {
-  if (user && ALLOWED_EMAILS.includes(user.email)) {
-    document.getElementById('auth-gate').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    document.getElementById('user-info').textContent = user.email;
-    document.getElementById('auth-error').style.display = 'none';
-    startListening();
-  } else if (user) {
-    fbSignOut(auth);
-    document.getElementById('auth-error').style.display = 'block';
-    document.getElementById('auth-gate').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
-  } else {
-    document.getElementById('auth-gate').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
-  }
-});
+document.getElementById('auth-gate').style.display = 'none';
+document.getElementById('app').style.display = 'block';
+document.getElementById('user-info').textContent = 'local';
+startListening();
 
 document.getElementById('btn-google-signin').addEventListener('click', async () => {
   try { await signInWithPopup(auth, provider); } catch (e) { console.error(e); }
