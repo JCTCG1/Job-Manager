@@ -229,6 +229,7 @@ Shore power inlet install"></textarea>
         <button class="btn-primary" id="btn-parse" onclick="parseInvoice()">Generate Job Card</button>
         <button class="btn-secondary" onclick="clearAll()">Clear</button>
         <button class="btn-green" id="btn-push" onclick="openSlotPicker()" disabled>Send to Job Board →</button>
+        <button class="btn-secondary" onclick="openBoardManager()">Manage Board</button>
         <span class="status" id="status"></span>
       </div>
     </div>
@@ -251,7 +252,7 @@ Shore power inlet install"></textarea>
 
 <div class="modal-overlay" id="slot-modal">
   <div class="modal">
-    <h3>Send to Job Slot</h3>
+    <h3 id="modal-title">Send to Job Slot</h3>
     <div class="slot-grid" id="slot-grid"></div>
     <button class="modal-cancel" onclick="closeModal()">Cancel</button>
   </div>
@@ -259,7 +260,7 @@ Shore power inlet install"></textarea>
 
 <script type="module">
 import { initializeApp }                              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, onValue }             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set, remove, onValue }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged }
                                                       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
@@ -330,6 +331,10 @@ function setSyncStatus(ok) {
 
 window.pushJobToSlot = async function(slotNum, jobData) {
   await set(ref(db, `jobs/slot${slotNum}`), jobData);
+};
+
+window.clearJobSlot = async function(slotNum) {
+  await remove(ref(db, `jobs/slot${slotNum}`));
 };
 
 window._currentSlots = currentSlots;
@@ -641,6 +646,7 @@ function renderJobCard(customer, vehicle, tech, categories) {
 
 function openSlotPicker() {
   if (!lastParsed) return;
+  document.getElementById('modal-title').textContent = 'Send to Job Slot';
   const slots = window._currentSlots || {};
   const grid  = document.getElementById('slot-grid');
   grid.innerHTML = '';
@@ -660,6 +666,35 @@ function openSlotPicker() {
         setStatus(`✓ Sent to Job ${n} on the board.`, 'done');
       } catch(e) { setStatus('Send failed: ' + e.message, 'error'); }
     };
+    grid.appendChild(btn);
+  }
+  document.getElementById('slot-modal').classList.add('open');
+}
+
+function openBoardManager() {
+  document.getElementById('modal-title').textContent = 'Manage Board';
+  const slots = window._currentSlots || {};
+  const grid  = document.getElementById('slot-grid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= 4; i++) {
+    const existing = slots[`slot${i}`];
+    const name = existing ? (existing.customer || 'Occupied') : 'Empty';
+    const btn = document.createElement('button');
+    btn.className = 'slot-btn' + (existing ? ' occupied' : '');
+    btn.style.opacity = existing ? '1' : '0.4';
+    btn.style.cursor  = existing ? 'pointer' : 'default';
+    btn.innerHTML = `<span class="slot-num">Job ${i}</span><span class="slot-name">${existing ? '✕ Clear — ' + name : 'Empty'}</span>`;
+    if (existing) {
+      const n = i;
+      btn.onclick = async () => {
+        if (!confirm(`Clear Job ${n} (${name})?`)) return;
+        closeModal();
+        try {
+          await window.clearJobSlot(n);
+          setStatus(`✓ Job ${n} cleared from board.`, 'done');
+        } catch(e) { setStatus('Clear failed: ' + e.message, 'error'); }
+      };
+    }
     grid.appendChild(btn);
   }
   document.getElementById('slot-modal').classList.add('open');
