@@ -148,6 +148,22 @@
     .items li::before{color:#c8763a}
     @page{size:landscape;margin:.3in}
   }
+  /* move-mode board manager */
+  .slot-card{background:var(--card);border:1px solid var(--border-l);border-radius:3px;padding:10px 10px 8px;transition:border-color .15s,background .15s}
+  .slot-card .slot-num{font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.1em;color:var(--orange);display:block;margin-bottom:2px}
+  .slot-card .slot-name{font-size:.6rem;color:var(--muted);font-family:'DM Mono',monospace;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px}
+  .slot-card .slot-actions{display:flex;gap:5px}
+  .btn-move{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.06em;padding:3px 7px;border:1px solid var(--border-l);border-radius:2px;background:transparent;color:var(--light);cursor:pointer}
+  .btn-move:hover{border-color:var(--teal);color:var(--teal)}
+  .btn-clr{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.06em;padding:3px 7px;border:1px solid var(--border-l);border-radius:2px;background:transparent;color:var(--muted);cursor:pointer}
+  .btn-clr:hover{border-color:#e07060;color:#e07060}
+  .slot-card.move-source{border-color:var(--teal);background:#1e3230}
+  .slot-card.move-target{border-color:var(--orange);cursor:pointer}
+  .slot-card.move-target:hover{background:#332416}
+  .slot-card.move-inactive{opacity:.35}
+  .move-hint{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--teal);letter-spacing:.04em;margin-bottom:12px;min-height:1em}
+  .slot-card.empty-slot{opacity:.4;pointer-events:none}
+  .slot-card.empty-slot.move-target{opacity:1;pointer-events:auto}
 </style>
 </head>
 <body>
@@ -236,6 +252,7 @@ Shore power inlet install"></textarea>
 <div class="modal-overlay" id="slot-modal">
   <div class="modal">
     <h3 id="modal-title">Send to Job Slot</h3>
+    <div class="move-hint" id="move-hint"></div>
     <div class="slot-grid" id="slot-grid"></div>
     <button class="modal-cancel" onclick="closeModal()">Cancel</button>
   </div>
@@ -347,6 +364,22 @@ window.pushToSlotOnly = async function(slotNum, jobData) {
 window.clearJobSlot = async function(slotNum) {
   await remove(ref(db, `jobs/slot${slotNum}`));
   await remove(ref(db, `checked/slot${slotNum}`));
+};
+
+// Move slot: src → dst, clear src (dst was empty)
+window._moveSlot = async function(srcNum, srcData, dstNum) {
+  await set(ref(db, `jobs/slot${dstNum}`), srcData);
+  await remove(ref(db, `checked/slot${dstNum}`));
+  await remove(ref(db, `jobs/slot${srcNum}`));
+  await remove(ref(db, `checked/slot${srcNum}`));
+};
+
+// Swap two occupied slots
+window._swapSlots = async function(aNum, aData, bNum, bData) {
+  await set(ref(db, `jobs/slot${aNum}`), bData);
+  await set(ref(db, `jobs/slot${bNum}`), aData);
+  await remove(ref(db, `checked/slot${aNum}`));
+  await remove(ref(db, `checked/slot${bNum}`));
 };
 
 // History checked state
@@ -720,28 +753,82 @@ function buildSlotGrid(handlerFactory) {
 
 function openBoardManager() {
   document.getElementById('modal-title').textContent = 'Manage Board';
-  const slots = window._currentSlots || {};
-  const grid  = document.getElementById('slot-grid');
-  grid.innerHTML = '';
-  for (let i = 1; i <= 4; i++) {
-    const existing = slots[`slot${i}`];
-    const name = existing ? (existing.customer || 'Occupied') : 'Empty';
-    const btn = document.createElement('button');
-    btn.className = 'slot-btn' + (existing ? ' occupied' : '');
-    btn.style.opacity = existing ? '1' : '0.4';
-    btn.style.cursor  = existing ? 'pointer' : 'default';
-    btn.innerHTML = `<span class="slot-num">Job ${i}</span><span class="slot-name">${existing ? '✕ Clear — ' + name : 'Empty'}</span>`;
-    if (existing) {
-      const n = i;
-      btn.onclick = async () => {
-        if (!confirm(`Clear Job ${n} (${name})?`)) return;
-        closeModal();
-        try { await window.clearJobSlot(n); setStatus(`✓ Job ${n} cleared from board.`, 'done'); }
-        catch(e) { setStatus('Clear failed: ' + e.message, 'error'); }
-      };
+  document.getElementById('move-hint').textContent = '';
+  let movingFrom = null; // slot number currently selected for move
+
+  function renderManagerGrid() {
+    const slots = window._currentSlots || {};
+    const grid  = document.getElementById('slot-grid');
+    grid.innerHTML = '';
+
+    for (let i = 1; i <= 4; i++) {
+      const existing = slots[`slot${i}`];
+      const name = existing ? (existing.customer || 'Occupied') : 'Empty';
+      const card = document.createElement('div');
+      const isEmpty = !existing;
+
+      if (movingFrom === null) {
+        // ── Default state ──
+        card.className = 'slot-card' + (isEmpty ? ' empty-slot' : '');
+        card.innerHTML = `<span class="slot-num">Job ${i}</span><span class="slot-name">${name}</span>`;
+        if (!isEmpty) {
+          const acts = document.createElement('div'); acts.className = 'slot-actions';
+          const moveBtn = document.createElement('button'); moveBtn.className = 'btn-move'; moveBtn.textContent = '↔ Move';
+          const clrBtn  = document.createElement('button'); clrBtn.className  = 'btn-clr';  clrBtn.textContent  = '✕ Clear';
+          moveBtn.onclick = (e) => {
+            e.stopPropagation();
+            movingFrom = i;
+            document.getElementById('move-hint').textContent = `Moving Job ${i} (${name}) — pick destination`;
+            renderManagerGrid();
+          };
+          clrBtn.onclick = async (e) => {
+            e.stopPropagation();
+            if (!confirm(`Clear Job ${i} (${name})?`)) return;
+            closeModal();
+            try { await window.clearJobSlot(i); setStatus(`✓ Job ${i} cleared from board.`, 'done'); }
+            catch(e2) { setStatus('Clear failed: ' + e2.message, 'error'); }
+          };
+          acts.appendChild(moveBtn); acts.appendChild(clrBtn); card.appendChild(acts);
+        }
+      } else {
+        // ── Move-select state ──
+        if (i === movingFrom) {
+          card.className = 'slot-card move-source';
+          card.innerHTML = `<span class="slot-num">Job ${i}</span><span class="slot-name">${name}</span>`;
+          const cancelBtn = document.createElement('button'); cancelBtn.className = 'btn-clr';
+          cancelBtn.textContent = 'Cancel'; cancelBtn.style.marginTop = '6px';
+          cancelBtn.onclick = (e) => {
+            e.stopPropagation(); movingFrom = null;
+            document.getElementById('move-hint').textContent = '';
+            renderManagerGrid();
+          };
+          card.appendChild(cancelBtn);
+        } else {
+          card.className = 'slot-card move-target' + (isEmpty ? '' : '');
+          card.innerHTML = `<span class="slot-num">Job ${i}</span><span class="slot-name">${isEmpty ? 'Empty — move here' : name + ' (swap)'}</span>`;
+          const src = movingFrom;
+          card.onclick = async () => {
+            closeModal();
+            try {
+              const srcData = (window._currentSlots || {})[`slot${src}`];
+              const dstData = (window._currentSlots || {})[`slot${i}`];
+              // Write destination first, then source
+              if (dstData) {
+                await window._swapSlots(src, srcData, i, dstData);
+                setStatus(`✓ Swapped Job ${src} and Job ${i}.`, 'done');
+              } else {
+                await window._moveSlot(src, srcData, i);
+                setStatus(`✓ Job ${src} moved to slot ${i}.`, 'done');
+              }
+            } catch(e) { setStatus('Move failed: ' + e.message, 'error'); }
+          };
+        }
+      }
+      grid.appendChild(card);
     }
-    grid.appendChild(btn);
   }
+
+  renderManagerGrid();
   document.getElementById('slot-modal').classList.add('open');
 }
 
@@ -779,11 +866,14 @@ function buildHistoryEntry(pushId, jobData) {
     <span class="h-tech">${esc(jobData.tech||'—')}</span>
   `;
   const acts   = document.createElement('div'); acts.className = 'h-actions';
+  const printBtn = document.createElement('button'); printBtn.className = 'btn-secondary h-push-btn';
+  printBtn.textContent = 'Print';
+  printBtn.onclick = (e) => { e.stopPropagation(); printHistoryJob(jobData); };
   const pushBtn = document.createElement('button'); pushBtn.className = 'btn-secondary h-push-btn';
   pushBtn.textContent = 'Send to Board →';
   pushBtn.onclick = (e) => { e.stopPropagation(); openSlotPickerForHistory(jobData); };
   const toggle = document.createElement('span'); toggle.className = 'h-toggle'; toggle.textContent = '▸';
-  acts.appendChild(pushBtn); acts.appendChild(toggle);
+  acts.appendChild(printBtn); acts.appendChild(pushBtn); acts.appendChild(toggle);
   hdr.appendChild(meta); hdr.appendChild(acts); entry.appendChild(hdr);
 
   const body = document.createElement('div'); body.className = 'h-entry-body';
@@ -840,6 +930,55 @@ function buildHistoryEntry(pushId, jobData) {
     }
   });
   return entry;
+}
+
+function printHistoryJob(jobData) {
+  const ts = jobData.timestamp
+    ? new Date(jobData.timestamp).toLocaleDateString('en-US',
+        { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' })
+    : '';
+  const categoriesHtml = (jobData.categories||[]).map(sec => `
+    <div class="category">
+      <div class="cat-title">${esc(sec.cat)}</div>
+      ${sec.subs.map(sub => `
+        <div class="subcategory">
+          <div class="sub-title">${esc(sub.name)}</div>
+          <ul class="items">${sub.items.map(it => `<li>${esc(it)}</li>`).join('')}</ul>
+        </div>`).join('')}
+    </div>`).join('');
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html>
+<html><head>
+<title>TCG Job Card — ${esc(jobData.customer||'')}</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;color:#111;background:white;padding:.25in}
+  .ts{font-family:'DM Mono',monospace;font-size:.52rem;color:#888;text-align:right;margin-bottom:5px}
+  .job-header{background:#f5f5f5;border:.5px solid #ccc;border-bottom:none;padding:7px 12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .label{font-family:'DM Mono',monospace;font-size:.5rem;text-transform:uppercase;letter-spacing:.08em;color:#888;display:block}
+  .value{font-family:'Bebas Neue',sans-serif;font-size:.88rem;letter-spacing:.06em;display:block}
+  .job-body{border:.5px solid #ccc;padding:8px 12px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px 10px;align-items:start}
+  .category{break-inside:avoid}
+  .cat-title{font-family:'DM Mono',monospace;font-size:.52rem;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#2a7a6a;border-bottom:.5px solid #ddd;padding-bottom:2px;margin-bottom:4px}
+  .subcategory{margin-bottom:4px}
+  .sub-title{font-size:.58rem;font-weight:600;color:#555;margin-bottom:2px}
+  .items{list-style:none;padding-left:6px}
+  .items li{display:flex;align-items:flex-start;gap:3px;font-size:.55rem;color:#333;line-height:1.4}
+  .items li::before{content:'–';color:#c8763a;flex-shrink:0}
+  @page{size:landscape;margin:.3in}
+</style>
+</head><body>
+<div class="ts">${ts}</div>
+<div class="job-header">
+  <div><span class="label">Customer</span><span class="value">${esc(jobData.customer||'—')}</span></div>
+  <div><span class="label">Vehicle</span><span class="value">${esc(jobData.vehicle||'—')}</span></div>
+  <div><span class="label">Tech</span><span class="value">${esc(jobData.tech||'—')}</span></div>
+</div>
+<div class="job-body">${categoriesHtml}</div>
+<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();};}<\/script>
+</body></html>`);
+  win.document.close();
 }
 
 function esc(str) {
