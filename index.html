@@ -26,16 +26,9 @@
 
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 0 0 48px; }
 
-  /* ── Auth gate ── */
+  /* ── Auth gate (kept but bypassed) ── */
   #auth-gate { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); }
   .auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 48px 40px; text-align: center; max-width: 360px; width: 100%; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
-  .auth-box h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 0.12em; color: var(--text); margin-bottom: 4px; }
-  .auth-box h1 span { color: var(--teal); }
-  .auth-box p { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 32px; }
-  .btn-google { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 11px 16px; border: 1px solid var(--border-l); border-radius: 3px; background: var(--card); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500; color: var(--text); transition: border-color 0.15s, background 0.15s; }
-  .btn-google:hover { border-color: var(--teal); background: #333; }
-  .btn-google svg { flex-shrink: 0; }
-  .auth-error { margin-top: 14px; font-family: 'DM Mono', monospace; font-size: 0.68rem; color: #e07060; display: none; }
 
   #app { display: none; }
 
@@ -83,10 +76,16 @@
   .items { list-style: none; padding-left: 8px; }
   .item-row { display: flex; align-items: center; gap: 4px; padding: 1px 0; }
   .item-bullet { color: var(--orange); font-size: 0.65rem; flex-shrink: 0; user-select: none; }
+  .item-bullet.faded { opacity: 0.2; }
   .item-input { font-size: 0.67rem; color: var(--item); outline: none; background: transparent; border: none; border-bottom: 1px solid transparent; flex: 1; min-width: 0; font-family: 'DM Sans', sans-serif; line-height: 1.6; cursor: default; pointer-events: none; }
   body.edit-mode .item-input { cursor: text; pointer-events: auto; }
   body.edit-mode .item-input:focus { border-bottom-color: var(--border-l); }
   .item-input::placeholder { color: #bbb8b0; }
+  .item-input.checked { text-decoration: line-through; opacity: 0.38; }
+
+  /* ── Checkboxes ── */
+  .item-check { width: 13px; height: 13px; flex-shrink: 0; cursor: pointer; accent-color: var(--teal); }
+  body.edit-mode .item-check { display: none; }
 
   .edit-only { display: none !important; }
   body.edit-mode .edit-only { display: flex !important; }
@@ -102,44 +101,11 @@
   .btn-add-cat { display: none; background: none; border: 1px dashed var(--border-l); border-radius: 2px; cursor: pointer; font-size: 0.6rem; font-family: 'DM Mono', monospace; color: var(--muted); padding: 4px 8px; width: 100%; text-align: left; margin-top: 4px; letter-spacing: 0.04em; }
   .btn-add-cat:hover { color: var(--teal); border-color: var(--teal); }
 
-  /* ── Per-job clear button ── */
-  .btn-clear-job {
-    font-family: 'DM Mono', monospace; font-size: 0.55rem; letter-spacing: 0.07em;
-    text-transform: uppercase; background: none; border: 1px solid var(--border-l);
-    border-radius: 2px; padding: 2px 8px; cursor: pointer; color: var(--muted);
-    transition: all 0.15s; margin-top: 6px; width: 100%;
-  }
-  .btn-clear-job:hover { border-color: #e07060; color: #e07060; }
-
   /* ── Empty state ── */
-  .job-empty-state {
-    padding: 24px 12px;
-    text-align: center;
-  }
-  .job-empty-state .empty-icon {
-    font-size: 1.4rem; margin-bottom: 8px; opacity: 0.25;
-  }
-  .job-empty-state .empty-label {
-    font-family: 'DM Mono', monospace; font-size: 0.65rem;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--muted);
-  }
-  .job-empty-state .empty-sub {
-    font-family: 'DM Mono', monospace; font-size: 0.58rem;
-    color: var(--border-l); margin-top: 4px; letter-spacing: 0.04em;
-  }
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100; align-items: center; justify-content: center; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: #ffffff; border: 1px solid var(--border-l); border-radius: 4px; padding: 24px; width: 340px; box-shadow: 0 12px 40px rgba(0,0,0,0.15); }
-  .modal h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 0.12em; color: var(--text); margin-bottom: 16px; }
-  .slot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-  .slot-btn { font-family: 'DM Mono', monospace; font-size: 0.68rem; padding: 10px; border: 1px solid var(--border-l); border-radius: 3px; background: #f5f3ef; cursor: pointer; text-align: left; transition: border-color 0.15s, background 0.15s; color: var(--text); }
-  .slot-btn:hover { border-color: var(--teal); background: #eef7f5; }
-  .slot-btn .slot-num { font-family: 'Bebas Neue', sans-serif; font-size: 0.95rem; letter-spacing: 0.1em; color: var(--orange); display: block; margin-bottom: 2px; }
-  .slot-btn .slot-name { font-size: 0.6rem; color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .slot-btn.occupied { border-color: var(--orange); }
-  .modal-cancel { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; background: none; border: 1px solid var(--border-l); border-radius: 2px; padding: 6px 14px; cursor: pointer; color: var(--muted); }
-  .modal-cancel:hover { border-color: var(--muted); color: var(--text); }
+  .job-empty-state { padding: 24px 12px; text-align: center; }
+  .job-empty-state .empty-icon { font-size: 1.4rem; margin-bottom: 8px; opacity: 0.25; }
+  .job-empty-state .empty-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .job-empty-state .empty-sub { font-family: 'DM Mono', monospace; font-size: 0.58rem; color: var(--border-l); margin-top: 4px; letter-spacing: 0.04em; }
 
   @media print {
     #auth-gate { display: none !important; }
@@ -150,6 +116,7 @@
     .toolbar { display: none !important; }
     .edit-only { display: none !important; }
     .btn-add-item, .btn-add-sub, .btn-add-cat, .job-badge { display: none !important; }
+    .item-check { display: none !important; }
     .board { gap: 8px; }
     .job-card { background: white; border: 1px solid #bbb; }
     .job-header { background: #f5f5f5; }
@@ -157,6 +124,7 @@
     .cat-title { color: #2a7a6a; }
     .item-bullet { color: #c8763a; }
     .item-input, .sub-title { color: #333; }
+    .item-input.checked { text-decoration: line-through; opacity: 0.4; }
     .job-field input { color: #111; border-bottom-color: #ccc; }
     @page { size: landscape; margin: 0.35in; }
   }
@@ -165,31 +133,17 @@
 </head>
 <body>
 
-<!-- ── Auth gate ── -->
-<div id="auth-gate">
-  <div class="auth-box">
-    <h1>TCG <span>Daily Jobs</span></h1>
-    <p>Sign in with your TCG Google account</p>
-    <button class="btn-google" id="btn-google-signin">
-      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
-      Sign in with Google
-    </button>
-    <div class="auth-error" id="auth-error">Access denied. Use your TCG email address.</div>
-  </div>
-</div>
+<div id="auth-gate" style="display:none;"></div>
 
-<!-- ── Main app ── -->
 <div id="app">
   <header>
     <h1>TCG <span>Daily Jobs</span></h1>
     <div class="date" id="date-display"></div>
     <div class="toolbar">
       <button id="btn-edit" onclick="toggleEdit()">Edit</button>
-      <button onclick="clearJobs()">Clear Jobs</button>
       <button onclick="window.print()">Print</button>
       <span><span class="sync-dot" id="sync-dot"></span><span class="sync-label" id="sync-label">connecting...</span></span>
-      <span class="user-info" id="user-info"></span>
-      <button id="btn-signout">Sign Out</button>
+      <span class="user-info" id="user-info">board view</span>
     </div>
   </header>
   <div class="board-wrap">
@@ -197,19 +151,9 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="slot-modal">
-  <div class="modal">
-    <h3>Send to Job Slot</h3>
-    <div class="slot-grid" id="slot-grid"></div>
-    <button class="modal-cancel" onclick="closeModal()">Cancel</button>
-  </div>
-</div>
-
 <script type="module">
-import { initializeApp }                              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, set, remove }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged }
-                                                      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { initializeApp }                           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, remove }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey:            "AIzaSyCJpAsk_zRsssznO0_c2QxSpB7BJykULKY",
@@ -221,36 +165,21 @@ const firebaseConfig = {
   appId:             "1:275203550533:web:bf497f86eee41a7048622c"
 };
 
-const ALLOWED_EMAILS = [
-  "justin@truckcampergarage.com",
-  "ryan@truckcampergarage.com",
-  "john@truckcampergarage.com",
-  "zach@truckcampergarage.com",
-  "sacha@truckcampergarage.com",
-  "sam@truckcampergarage.com"
-];
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
 
-const app      = initializeApp(firebaseConfig);
-const db       = getDatabase(app);
-const auth     = getAuth(app);
-const provider = new GoogleAuthProvider();
-
-document.getElementById('auth-gate').style.display = 'none';
 document.getElementById('app').style.display = 'block';
-document.getElementById('user-info').textContent = 'local';
-startListening();
-
-document.getElementById('btn-google-signin').addEventListener('click', async () => {
-  try { await signInWithPopup(auth, provider); } catch (e) { console.error(e); }
-});
-document.getElementById('btn-signout').addEventListener('click', () => { fbSignOut(auth); });
 
 function startListening() {
   onValue(ref(db, 'jobs'), (snapshot) => {
     const data = snapshot.val() || {};
     setSyncStatus(true);
     for (let i = 1; i <= 4; i++) {
-      if (data[`slot${i}`]) applyJobToSlot(i, data[`slot${i}`]);
+      if (data[`slot${i}`]) {
+        applyJobToSlot(i, data[`slot${i}`]);
+      } else {
+        clearSlotDisplay(i);
+      }
     }
   }, () => setSyncStatus(false));
 }
@@ -260,41 +189,42 @@ function setSyncStatus(ok) {
   document.getElementById('sync-label').textContent = ok ? 'live' : 'disconnected';
 }
 
-window.sendToSlot = function(slotNum, jobData) {
-  set(ref(db, `jobs/slot${slotNum}`), jobData);
-  closeModal();
+/* ── Checked state ── */
+const checkedListeners = {};
+
+window.setupCheckedListener = function(slotNum) {
+  if (checkedListeners[slotNum]) checkedListeners[slotNum]();
+  checkedListeners[slotNum] = onValue(ref(db, `checked/slot${slotNum}`), (snapshot) => {
+    const data = snapshot.val() || {};
+    const card = document.getElementById(`card-${slotNum}`);
+    if (!card) return;
+    card.querySelectorAll('.item-row[data-item-key]').forEach(li => {
+      const key = li.dataset.itemKey;
+      const cb     = li.querySelector('.item-check');
+      const inp    = li.querySelector('.item-input');
+      const bullet = li.querySelector('.item-bullet');
+      const isChecked = !!data[key];
+      if (cb)     cb.checked = isChecked;
+      if (inp)    inp.classList.toggle('checked', isChecked);
+      if (bullet) bullet.classList.toggle('faded', isChecked);
+    });
+  });
 };
-window.clearSlotInDB = function(slotNum) { remove(ref(db, `jobs/slot${slotNum}`)); };
+
+window.setCheckedInDB = function(slotKey, itemKey, checked) {
+  if (checked) {
+    set(ref(db, `checked/${slotKey}/${itemKey}`), true);
+  } else {
+    remove(ref(db, `checked/${slotKey}/${itemKey}`));
+  }
+};
+
+startListening();
 </script>
 
 <script>
 document.getElementById('date-display').textContent =
   new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-
-const DEFAULT_SECTIONS = [
-  { cat: "Solar Install", subs: [
-    { name: "Panels & Mounting", items: ["Panel placement & layout","Roof gland / penetrations","Brackets & hardware torqued","Panel wiring confirmed"] },
-    { name: "Charge Controller",  items: ["MPPT mounted & ventilated","PV input wiring & fuse","Controller programmed","BMS comms configured"] },
-    { name: "Battery Bank",       items: ["Battery type & capacity","Cables sized & lugged","Busbars / fuse block","SOC display wired"] },
-    { name: "System Check",       items: ["OC voltage verified","Charge current under load","All terminations inspected","Customer walkthrough done"] },
-  ]},
-  { cat: "Electrical", subs: [
-    { name: "12V DC Distribution", items: ["Main fuse / breaker sized","Fuse block installed & labeled","Star ground established","Wire loom secured"] },
-    { name: "AC / Inverter",        items: ["Inverter sized & mounted","Inverter cables & fuse","Shore power inlet wired","GFCI outlets tested"] },
-    { name: "Alternator / DC-DC",   items: ["B2B charger installed","Charge wire from alt run","Isolator / relay configured","Charge rate verified"] },
-  ]},
-  { cat: "Mechanical", subs: [
-    { name: "Platform & Storage", items: ["Bed / platform framed","Drawer slides adjusted","Compartments secured","Weight distribution OK"] },
-    { name: "Roof & Exterior",    items: ["Roof rack installed","Sealant at penetrations","Vent fan / skylight mounted","Exterior panels aligned"] },
-  ]},
-  { cat: "Water & HVAC", subs: [
-    { name: "Plumbing", items: ["Fresh tank mounted","12V pump primed","Lines run & fittings tight","Drain / grey tank connected"] },
-    { name: "Climate",  items: ["Vent fan wired & tested","Heater mounted","Thermostat configured","CO detector installed"] },
-  ]},
-  { cat: "Final QC", subs: [
-    { name: "Pre-Delivery", items: ["All systems tested","Interior cleaned","Wiring diagram provided","Customer sign-off"] },
-  ]},
-];
 
 const slotJobData = {};
 
@@ -307,12 +237,27 @@ window.applyJobToSlot = function(slotNum, jobData) {
   document.getElementById(`j${slotNum}-tech`).value     = jobData.tech     || '';
   const body = document.getElementById(`body-${slotNum}`);
   body.innerHTML = '';
-  (jobData.categories || []).forEach(sec => body.appendChild(makeCategory(sec)));
+  (jobData.categories || []).forEach((sec, catIdx) => body.appendChild(makeCategory(sec, catIdx)));
   body.appendChild(makeAddCatButton(body));
   const badge = card.querySelector('.job-badge');
   if (badge) { badge.textContent = '● from invoice'; badge.classList.add('visible'); }
   card.classList.add('just-updated');
   setTimeout(() => card.classList.remove('just-updated'), 2000);
+  if (window.setupCheckedListener) window.setupCheckedListener(slotNum);
+};
+
+window.clearSlotDisplay = function(slotNum) {
+  delete slotJobData[slotNum];
+  const card = document.getElementById(`card-${slotNum}`);
+  if (!card) return;
+  document.getElementById(`j${slotNum}-customer`).value = '';
+  document.getElementById(`j${slotNum}-vehicle`).value  = '';
+  document.getElementById(`j${slotNum}-tech`).value     = '';
+  const body = document.getElementById(`body-${slotNum}`);
+  body.innerHTML = '';
+  body.appendChild(makeEmptyState());
+  const badge = card.querySelector('.job-badge');
+  if (badge) { badge.textContent = ''; badge.classList.remove('visible'); }
 };
 
 function renderBoard() {
@@ -320,7 +265,10 @@ function renderBoard() {
   board.innerHTML = '';
   for (let i = 1; i <= 4; i++) {
     const card = document.createElement('div');
-    card.className = 'job-card'; card.id = `card-${i}`;
+    card.className = 'job-card';
+    card.id = `card-${i}`;
+    card.dataset.slot = i;
+
     const hdr = document.createElement('div');
     hdr.className = 'job-header';
     hdr.innerHTML = `
@@ -330,23 +278,12 @@ function renderBoard() {
       <div class="job-field"><label>Vehicle</label><input id="j${i}-vehicle" placeholder="Year / Make / Model" autocomplete="off"></div>
       <div class="job-field"><label>Tech</label><input id="j${i}-tech" placeholder="Initials" autocomplete="off"></div>
     `;
-
-    // Per-job clear button
-    const clearBtn = document.createElement('button');
-    clearBtn.className = 'btn-clear-job';
-    clearBtn.textContent = 'Clear Job';
-    const slotNum = i;
-    clearBtn.onclick = () => clearSingleJob(slotNum);
-    hdr.appendChild(clearBtn);
-
     card.appendChild(hdr);
 
     const body = document.createElement('div');
-    body.className = 'job-body'; body.id = `body-${i}`;
-
-    // Empty state by default
+    body.className = 'job-body';
+    body.id = `body-${i}`;
     body.appendChild(makeEmptyState());
-
     card.appendChild(body);
     board.appendChild(card);
   }
@@ -355,7 +292,6 @@ function renderBoard() {
 function makeEmptyState() {
   const div = document.createElement('div');
   div.className = 'job-empty-state';
-  div.id = 'empty-state';
   div.innerHTML = `
     <div class="empty-icon">📋</div>
     <div class="empty-label">Pending Job Details</div>
@@ -364,29 +300,12 @@ function makeEmptyState() {
   return div;
 }
 
-function clearSingleJob(slotNum) {
-  if (!confirm(`Clear Job ${slotNum}?`)) return;
-  const body = document.getElementById(`body-${slotNum}`);
-  if (body) {
-    body.innerHTML = '';
-    body.appendChild(makeEmptyState());
-  }
-  ['customer','vehicle','tech'].forEach(f => {
-    const el = document.getElementById(`j${slotNum}-${f}`);
-    if (el) el.value = '';
-  });
-  const badge = document.getElementById(`badge-${slotNum}`);
-  if (badge) badge.classList.remove('visible');
-  delete slotJobData[slotNum];
-  if (window.clearSlotInDB) window.clearSlotInDB(slotNum);
-}
-
-
 function makeAddCatButton(body) {
   const btn = document.createElement('button');
-  btn.className = 'btn-add-cat'; btn.textContent = '+ add category';
+  btn.className = 'btn-add-cat';
+  btn.textContent = '+ add category';
   btn.onclick = () => {
-    const newCat = makeCategory({ cat: 'New Category', subs: [] });
+    const newCat = makeCategory({ cat: 'New Category', subs: [] }, undefined);
     body.insertBefore(newCat, btn);
     const t = newCat.querySelector('.cat-title');
     t.contentEditable = 'true'; t.focus();
@@ -396,43 +315,115 @@ function makeAddCatButton(body) {
   return btn;
 }
 
-function makeItem(text) {
-  const li = document.createElement('li'); li.className = 'item-row';
-  const bullet = document.createElement('span'); bullet.className = 'item-bullet'; bullet.textContent = '–';
-  const inp = document.createElement('input'); inp.type = 'text'; inp.className = 'item-input';
-  inp.value = text; inp.placeholder = 'Task item...'; inp.readOnly = true;
-  const del = document.createElement('button'); del.className = 'btn-del edit-only'; del.textContent = '×';
+function makeItem(text, itemKey) {
+  const li = document.createElement('li');
+  li.className = 'item-row';
+  if (itemKey) li.dataset.itemKey = itemKey;
+
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.className = 'item-check';
+  cb.addEventListener('change', () => {
+    inp.classList.toggle('checked', cb.checked);
+    bullet.classList.toggle('faded', cb.checked);
+    const card = li.closest('.job-card');
+    const slotNum = card ? card.dataset.slot : null;
+    if (slotNum && itemKey && window.setCheckedInDB) {
+      window.setCheckedInDB(`slot${slotNum}`, itemKey, cb.checked);
+    }
+  });
+
+  const bullet = document.createElement('span');
+  bullet.className = 'item-bullet';
+  bullet.textContent = '–';
+
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.className = 'item-input';
+  inp.value = text;
+  inp.placeholder = 'Task item...';
+  inp.readOnly = true;
+
+  const del = document.createElement('button');
+  del.className = 'btn-del edit-only';
+  del.textContent = '×';
   del.onclick = () => li.remove();
-  li.appendChild(bullet); li.appendChild(inp); li.appendChild(del);
+
+  li.appendChild(cb);
+  li.appendChild(bullet);
+  li.appendChild(inp);
+  li.appendChild(del);
   return li;
 }
 
-function makeSubcategory(sub) {
-  const wrap = document.createElement('div'); wrap.className = 'subcategory';
-  const hdr = document.createElement('div'); hdr.className = 'sub-header';
-  const title = document.createElement('div'); title.className = 'sub-title'; title.contentEditable = 'false'; title.textContent = sub.name;
-  const del = document.createElement('button'); del.className = 'btn-del edit-only'; del.textContent = '×'; del.onclick = () => wrap.remove();
-  hdr.appendChild(title); hdr.appendChild(del); wrap.appendChild(hdr);
-  const ul = document.createElement('ul'); ul.className = 'items';
-  sub.items.forEach(it => ul.appendChild(makeItem(it)));
-  const addItem = document.createElement('button'); addItem.className = 'btn-add-item'; addItem.textContent = '+ add item';
-  addItem.onclick = () => { const li = makeItem(''); ul.insertBefore(li, addItem); const inp = li.querySelector('.item-input'); inp.readOnly = false; inp.focus(); };
-  ul.appendChild(addItem); wrap.appendChild(ul);
+function makeSubcategory(sub, catIdx, subIdx) {
+  const wrap = document.createElement('div');
+  wrap.className = 'subcategory';
+  const hdr = document.createElement('div');
+  hdr.className = 'sub-header';
+  const title = document.createElement('div');
+  title.className = 'sub-title';
+  title.contentEditable = 'false';
+  title.textContent = sub.name;
+  const del = document.createElement('button');
+  del.className = 'btn-del edit-only';
+  del.textContent = '×';
+  del.onclick = () => wrap.remove();
+  hdr.appendChild(title);
+  hdr.appendChild(del);
+  wrap.appendChild(hdr);
+
+  const ul = document.createElement('ul');
+  ul.className = 'items';
+  sub.items.forEach((it, itemIdx) => {
+    const itemKey = (catIdx !== undefined && subIdx !== undefined)
+      ? `${catIdx}-${subIdx}-${itemIdx}`
+      : undefined;
+    ul.appendChild(makeItem(it, itemKey));
+  });
+
+  const addItem = document.createElement('button');
+  addItem.className = 'btn-add-item';
+  addItem.textContent = '+ add item';
+  addItem.onclick = () => {
+    const li = makeItem('', undefined);
+    ul.insertBefore(li, addItem);
+    const inp = li.querySelector('.item-input');
+    inp.readOnly = false;
+    inp.focus();
+  };
+  ul.appendChild(addItem);
+  wrap.appendChild(ul);
   return wrap;
 }
 
-function makeCategory(section) {
-  const catEl = document.createElement('div'); catEl.className = 'category';
-  const hdr = document.createElement('div'); hdr.className = 'cat-header';
-  const title = document.createElement('div'); title.className = 'cat-title'; title.contentEditable = 'false'; title.textContent = section.cat;
-  const del = document.createElement('button'); del.className = 'btn-del edit-only'; del.textContent = '×'; del.onclick = () => catEl.remove();
-  hdr.appendChild(title); hdr.appendChild(del); catEl.appendChild(hdr);
-  section.subs.forEach(sub => catEl.appendChild(makeSubcategory(sub)));
-  const addSub = document.createElement('button'); addSub.className = 'btn-add-sub'; addSub.textContent = '+ add subcategory';
+function makeCategory(section, catIdx) {
+  const catEl = document.createElement('div');
+  catEl.className = 'category';
+  const hdr = document.createElement('div');
+  hdr.className = 'cat-header';
+  const title = document.createElement('div');
+  title.className = 'cat-title';
+  title.contentEditable = 'false';
+  title.textContent = section.cat;
+  const del = document.createElement('button');
+  del.className = 'btn-del edit-only';
+  del.textContent = '×';
+  del.onclick = () => catEl.remove();
+  hdr.appendChild(title);
+  hdr.appendChild(del);
+  catEl.appendChild(hdr);
+
+  section.subs.forEach((sub, subIdx) => catEl.appendChild(makeSubcategory(sub, catIdx, subIdx)));
+
+  const addSub = document.createElement('button');
+  addSub.className = 'btn-add-sub';
+  addSub.textContent = '+ add subcategory';
   addSub.onclick = () => {
-    const newSub = makeSubcategory({ name: 'New Subcategory', items: [] });
+    const newSub = makeSubcategory({ name: 'New Subcategory', items: [] }, undefined, undefined);
     catEl.insertBefore(newSub, addSub);
-    const t = newSub.querySelector('.sub-title'); t.contentEditable = 'true'; t.focus();
+    const t = newSub.querySelector('.sub-title');
+    t.contentEditable = 'true'; t.focus();
     const r = document.createRange(); r.selectNodeContents(t);
     window.getSelection().removeAllRanges(); window.getSelection().addRange(r);
   };
@@ -445,42 +436,15 @@ function toggleEdit() {
   editMode = !editMode;
   document.body.classList.toggle('edit-mode', editMode);
   const btn = document.getElementById('btn-edit');
-  btn.classList.toggle('active', editMode); btn.textContent = editMode ? 'Done' : 'Edit';
-  document.querySelectorAll('.cat-title, .sub-title').forEach(el => { el.contentEditable = editMode ? 'true' : 'false'; });
-  document.querySelectorAll('.item-input').forEach(el => { el.readOnly = !editMode; });
+  btn.classList.toggle('active', editMode);
+  btn.textContent = editMode ? 'Done' : 'Edit';
+  document.querySelectorAll('.cat-title, .sub-title').forEach(el => {
+    el.contentEditable = editMode ? 'true' : 'false';
+  });
+  document.querySelectorAll('.item-input').forEach(el => {
+    el.readOnly = !editMode;
+  });
 }
-
-function clearJobs() {
-  if (!confirm('Clear all job fields and firebase slots?')) return;
-  for (let i = 1; i <= 4; i++) {
-    const body = document.getElementById(`body-${i}`);
-    if (body) { body.innerHTML = ''; body.appendChild(makeEmptyState()); }
-    ['customer','vehicle','tech'].forEach(f => { const el = document.getElementById(`j${i}-${f}`); if (el) el.value = ''; });
-    const badge = document.getElementById(`badge-${i}`); if (badge) badge.classList.remove('visible');
-    delete slotJobData[i];
-    if (window.clearSlotInDB) window.clearSlotInDB(i);
-  }
-}
-
-window.openSlotPicker = function(jobData) {
-  const grid = document.getElementById('slot-grid'); grid.innerHTML = '';
-  for (let i = 1; i <= 4; i++) {
-    const btn = document.createElement('button'); btn.className = 'slot-btn';
-    const existing = slotJobData[i];
-    const name = existing ? (existing.customer || 'Occupied') : 'Empty';
-    if (existing) btn.classList.add('occupied');
-    btn.innerHTML = `<span class="slot-num">Job ${i}</span><span class="slot-name">${name}</span>`;
-    const n = i;
-    btn.onclick = () => {
-      if (existing && !confirm(`Job ${n} already has "${name}". Replace it?`)) return;
-      window.sendToSlot(n, jobData);
-    };
-    grid.appendChild(btn);
-  }
-  document.getElementById('slot-modal').classList.add('open');
-};
-
-window.closeModal = function() { document.getElementById('slot-modal').classList.remove('open'); };
 
 renderBoard();
 </script>
