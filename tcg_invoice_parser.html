@@ -64,6 +64,15 @@
   .result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
   .result-header h2{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.12em;color:var(--muted)}
   .result-actions{display:flex;gap:8px}
+
+  /* ── Board preview (what the TV shows) ── */
+  .board-preview{margin-bottom:18px;border:1px solid var(--border);border-radius:3px;background:var(--card);overflow:hidden}
+  .board-preview .bp-hdr{background:#222;border-bottom:1px solid var(--border);padding:9px 14px;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);display:flex;align-items:center;gap:8px}
+  .bp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;padding:12px}
+  .bp-task{border:1px solid var(--border-l);border-radius:3px;overflow:hidden;background:var(--surface)}
+  .bp-task .bp-cat{background:#1f1f1f;color:var(--text);font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;padding:6px 9px;border-bottom:1px solid var(--border)}
+  .bp-task .bp-steps{padding:7px 9px;font-size:.66rem;color:var(--item);line-height:1.45}
+
   .job-card{background:var(--card);border:1px solid var(--border);border-radius:3px;overflow:hidden}
   .job-header{background:#222;border-bottom:1px solid var(--border);padding:14px 16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
   .job-info-item{display:flex;flex-direction:column;gap:3px}
@@ -131,7 +140,7 @@
     header{background:white;border-bottom:1px solid #ccc;padding:6px 12px}
     header h1{color:#111;font-size:1rem}
     header h1 span{color:#2a7a6a}
-    .top-bar,.parse-row,.input-panel,.history-wrap{display:none!important}
+    .top-bar,.parse-row,.input-panel,.history-wrap,.board-preview{display:none!important}
     .result-actions,.result-header{display:none}
     .result-area{padding:0;margin:0;max-width:100%}
     .job-card{background:white;border:.5px solid #ccc}
@@ -231,6 +240,14 @@ Shore power inlet install"></textarea>
         <h2>Generated Job Card</h2>
         <div class="result-actions"><button class="btn-secondary" onclick="window.print()">Print</button></div>
       </div>
+
+      <!-- Board view: the condensed lines that go to the TV -->
+      <div class="board-preview" id="board-preview" style="display:none;">
+        <div class="bp-hdr">Board view — what techs see on the TV</div>
+        <div class="bp-grid" id="bp-grid"></div>
+      </div>
+
+      <!-- Full detail: kept for history + print -->
       <div class="job-card">
         <div class="job-header" id="result-header-fields"></div>
         <div class="job-body" id="result-body"></div>
@@ -345,10 +362,16 @@ function setSyncStatus(ok) {
   document.getElementById('sync-label').textContent = ok ? 'connected to job board' : 'disconnected';
 }
 
+// Clear both the new task-level (done/) and legacy item-level (checked/) state for a slot
+async function clearSlotState(slotNum) {
+  await remove(ref(db, `done/slot${slotNum}`));
+  await remove(ref(db, `checked/slot${slotNum}`));
+}
+
 // Push new job: board slot + history + Sheets
 window.pushJobToSlot = async function(slotNum, jobData) {
   await set(ref(db, `jobs/slot${slotNum}`), jobData);
-  await remove(ref(db, `checked/slot${slotNum}`));
+  await clearSlotState(slotNum);
   const histRef = push(ref(db, 'history'));
   await set(histRef, jobData);
   appendToSheet(jobData);
@@ -357,29 +380,29 @@ window.pushJobToSlot = async function(slotNum, jobData) {
 // Re-push from history: board slot only, no new history entry
 window.pushToSlotOnly = async function(slotNum, jobData) {
   await set(ref(db, `jobs/slot${slotNum}`), jobData);
-  await remove(ref(db, `checked/slot${slotNum}`));
+  await clearSlotState(slotNum);
 };
 
 // Clear slot via Manage Board
 window.clearJobSlot = async function(slotNum) {
   await remove(ref(db, `jobs/slot${slotNum}`));
-  await remove(ref(db, `checked/slot${slotNum}`));
+  await clearSlotState(slotNum);
 };
 
-// Move slot: src → dst, clear src (dst was empty)
+// Move slot: src → dst, clear src (dst was empty). Completion resets.
 window._moveSlot = async function(srcNum, srcData, dstNum) {
   await set(ref(db, `jobs/slot${dstNum}`), srcData);
-  await remove(ref(db, `checked/slot${dstNum}`));
+  await clearSlotState(dstNum);
   await remove(ref(db, `jobs/slot${srcNum}`));
-  await remove(ref(db, `checked/slot${srcNum}`));
+  await clearSlotState(srcNum);
 };
 
-// Swap two occupied slots
+// Swap two occupied slots. Completion resets on both.
 window._swapSlots = async function(aNum, aData, bNum, bData) {
   await set(ref(db, `jobs/slot${aNum}`), bData);
   await set(ref(db, `jobs/slot${bNum}`), aData);
-  await remove(ref(db, `checked/slot${aNum}`));
-  await remove(ref(db, `checked/slot${bNum}`));
+  await clearSlotState(aNum);
+  await clearSlotState(bNum);
 };
 
 // History checked state
@@ -399,7 +422,10 @@ async function appendToSheet(jobData) {
   if (!googleAccessToken) { console.warn('No Google token — Sheets write skipped. Re-sign in to enable.'); return; }
   const date = new Date(jobData.timestamp || Date.now()).toLocaleString('en-US',
     { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' });
-  const cats   = (jobData.categories || []).map(c => c.cat).join(', ');
+  // Prefer the condensed board task names; fall back to detailed category names
+  const cats = (jobData.tasks && jobData.tasks.length)
+    ? jobData.tasks.map(t => t.category).join(', ')
+    : (jobData.categories || []).map(c => c.cat).join(', ');
   const values = [[date, jobData.customer||'', jobData.vehicle||'', jobData.tech||'', cats]];
   try {
     const res = await fetch(
@@ -428,7 +454,11 @@ async function parseInvoice() {
 
   const prompt = `You are a job card generator for Truck Camper Garage (TCG), a truck camper install, service, and custom fab shop in San Diego. Generate a concise job task card from QuickBooks invoice line items.
 
-IMPORTANT: Keep tasks SHORT — 3 to 5 bullet points max per subcategory. Checkpoints only, not full procedures. Every job gets a Final QC section at the end (once only).
+You produce TWO views from the same invoice:
+1. "tasks" — a CONDENSED board view for the shop TV. One entry per distinct job type, each a single comma-separated line of key actions.
+2. "categories" — the DETAILED view for the printed work order and history (subcategories with 3–5 checkpoint bullets each).
+
+IMPORTANT: Keep detailed tasks SHORT — 3 to 5 bullet points max per subcategory. Checkpoints only, not full procedures. Every job gets a Final QC section at the end (once only).
 
 Use the REFERENCE GUIDE to assign tasks to recognized items. For anything not in the guide, use the STRICT RULES.
 
@@ -645,8 +675,33 @@ STRICT RULES (for anything not matched above):
 
 GROUP into logical CATEGORIES and SUBCATEGORIES. Keep subcategories tight — combine related items rather than making a subcategory for every single line item.
 
-Return ONLY valid JSON in this exact format, no explanation, no markdown:
+═══════════════════════════════════════════
+BOARD VIEW ("tasks") — REQUIRED, READ CAREFULLY
+═══════════════════════════════════════════
+Produce a flat "tasks" array for the shop TV board. One entry per DISTINCT job type present on the invoice. Each entry:
+- "category": short job name (e.g. "Solar Panels", "Truck Side Charging", "Airbags")
+- "steps": the KEY actions as ONE single line, comma-separated, lowercase, no trailing period. Milestones a tech scans at a glance — NOT every sub-step. Aim for 2–6 items.
+
+Use these EXACT step lines when the matching work is on the invoice (TCG standard wording):
+- Truck Side Charging → "wire alternator, route to rear, install Anderson connector"
+- Camper Side Charging → "install Anderson connector, install DC to DC, wire to battery"
+- Solar Panels → "install z clips on panel, install panel on roof, seal penetrations, install solar gland, drop wires into camper"
+- Solar Charge Controller → "tie solar wires into charge controller, wire charge controller to battery"
+- Battery Swap → "remove old battery, reinstall new battery"
+- Airbags → "lift vehicle, remove rear wheels, lower axle, install brackets on axle, install brackets on frame, mount airbags to two brackets, raise axle, mount airbags to upper brackets, tie in airlines"
+- Airbag Air Compressor → "wire from battery, mount compressor, run airlines"
+- Timbrens / Sumo Springs → use "remove factory bump stops, install Timbrens" OR "remove factory bump stops, install Sumo Springs" depending on which product is on the invoice. Use the exact product named. If both appear, list both installs.
+
+DYNAMIC RULE: for Timbrens/Sumo Springs, the product name in the step must match what is actually on the invoice — never guess.
+
+For job types NOT in the exact list above, write your own terse comma line in the same lowercase, milestone-only style, derived from the detailed steps. The "tasks" entries should line up with the detailed categories but be far shorter.
+
+═══════════════════════════════════════════
+OUTPUT — return ONLY valid JSON, no markdown, no explanation:
 {
+  "tasks": [
+    { "category": "Solar Panels", "steps": "install z clips on panel, install panel on roof, seal penetrations, install solar gland, drop wires into camper" }
+  ],
   "categories": [
     {
       "cat": "Category Name",
@@ -674,7 +729,11 @@ ${invoiceText}`;
     const raw    = data.content?.find(b => b.type === 'text')?.text || '';
     const clean  = raw.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
-    lastParsed = { customer, vehicle, tech, categories:parsed.categories, timestamp:Date.now() };
+    const tasks  = (Array.isArray(parsed.tasks) && parsed.tasks.length)
+      ? parsed.tasks
+      : deriveBoardTasks(parsed.categories);
+    lastParsed = { customer, vehicle, tech, tasks, categories:parsed.categories, timestamp:Date.now() };
+    renderBoardPreview(tasks);
     renderJobCard(customer, vehicle, tech, parsed.categories);
     setStatus('Done — ready to send to job board.', 'done');
     document.getElementById('btn-push').disabled = false;
@@ -683,6 +742,30 @@ ${invoiceText}`;
     setStatus('Error: ' + err.message, 'error');
   }
   document.getElementById('btn-parse').disabled = false;
+}
+
+// Fallback: collapse detailed categories into one condensed board line each
+function deriveBoardTasks(categories) {
+  return (categories || []).map(c => ({
+    category: c.cat,
+    steps: (c.subs || [])
+      .flatMap(s => s.items || [])
+      .filter(Boolean)
+      .slice(0, 6)
+      .join(', ')
+  }));
+}
+
+function renderBoardPreview(tasks) {
+  const wrap = document.getElementById('board-preview');
+  const grid = document.getElementById('bp-grid');
+  if (!tasks || !tasks.length) { wrap.style.display = 'none'; return; }
+  grid.innerHTML = tasks.map(t => `
+    <div class="bp-task">
+      <div class="bp-cat">${esc(t.category || 'Task')}</div>
+      <div class="bp-steps">${esc(t.steps || '')}</div>
+    </div>`).join('');
+  wrap.style.display = 'block';
 }
 
 function renderJobCard(customer, vehicle, tech, categories) {
@@ -992,6 +1075,7 @@ function clearAll() {
   ['f-customer','f-vehicle','f-tech'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('result-empty').style.display = 'block';
   document.getElementById('result-wrap').style.display  = 'none';
+  document.getElementById('board-preview').style.display = 'none';
   document.getElementById('btn-push').disabled = true;
   lastParsed = null; setStatus('','');
 }
