@@ -1,155 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>TCG Daily Jobs</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg:       #a6a6a6;
-    --surface:  #ffffff;
-    --card:     #ffffff;
-    --border:   #dddad4;
-    --border-l: #c8c4bc;
-    --teal:     #3a8e7e;
-    --orange:   #c8763a;
-    --text:     #1a1a1a;
-    --muted:    #888078;
-    --light:    #444040;
-    --cat:      #3a8e7e;
-    --subcat:   #555050;
-    --item:     #2a2a2a;
+    --bg: #14161b;
+    --row: #1d2026;
+    --row-line: #2f343d;
+    --ink: #f4f5f7;
+    --ink-dim: #9aa1ac;
+    --ink-faint: #6b7280;
+    --amber: #ffb01f;
+    --card: #ffffff;
+    --card-ink: #14171c;
+    --card-line: #e4e7ec;
+    --green: #34c759;
+    --blue: #3b82f6;
   }
-
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 0 0 48px; }
-
-  /* ── Auth gate (kept but bypassed) ── */
-  #auth-gate { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); }
-  .auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 48px 40px; text-align: center; max-width: 360px; width: 100%; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
-
-  #app { display: none; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+  .label {
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
 
   /* ── Header ── */
-  header { background: #ffffff; border-bottom: 1px solid var(--border); padding: 14px 24px; text-align: center; }
-  header h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 0.14em; color: var(--text); line-height: 1; }
-  header h1 span { color: var(--teal); }
-  header .date { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--muted); margin-top: 4px; letter-spacing: 0.08em; text-transform: uppercase; }
-  .toolbar { display: flex; justify-content: center; gap: 8px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
-  .toolbar button { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 14px; border-radius: 2px; cursor: pointer; border: 1px solid var(--border-l); background: transparent; color: var(--light); transition: all 0.15s; }
-  .toolbar button:hover { border-color: var(--teal); color: var(--teal); background: #eef7f5; }
-  .toolbar button.active { background: var(--teal); border-color: var(--teal); color: #fff; }
-  .user-info { font-family: 'DM Mono', monospace; font-size: 0.58rem; color: var(--muted); letter-spacing: 0.04em; background: #f5f3ef; border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; }
-  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border-l); display: inline-block; margin-right: 3px; transition: background 0.3s; }
-  .sync-dot.live { background: var(--teal); box-shadow: 0 0 5px var(--teal); }
+  .board-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 26px;
+    border-bottom: 1px solid var(--row-line);
+    flex-wrap: wrap;
+  }
+  .board-head .title {
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 24px;
+  }
+  .board-head .title span { color: var(--amber); }
+  .board-head .right { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .board-head .date { color: var(--ink-dim); font-size: 14px; }
+  .sync { display: flex; align-items: center; gap: 7px; }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-faint); transition: background .3s; }
+  .sync-dot.live { background: var(--green); box-shadow: 0 0 6px var(--green); }
   .sync-dot.error { background: #e07060; }
-  .sync-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: var(--muted); letter-spacing: 0.04em; }
+  .sync-label { color: var(--ink-dim); font-size: 13px; }
+  .board-head button {
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    font-size: 13px;
+    background: var(--row);
+    color: var(--ink);
+    border: 1px solid var(--row-line);
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+  .board-head button:hover { border-color: var(--amber); color: var(--amber); }
 
   /* ── Board ── */
-  .board-wrap { padding: 16px; }
-  .board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 1600px; margin: 0 auto; }
+  .board { padding: 18px 22px; display: flex; flex-direction: column; gap: 16px; max-width: 1700px; margin: 0 auto; }
 
-  /* ── Job card ── */
-  .job-card { background: var(--card); border: 1px solid var(--border); border-radius: 3px; overflow: hidden; transition: border-color 0.4s; }
-  .job-card.just-updated { border-color: var(--teal); }
-  .job-header { background: #f5f3ef; border-bottom: 1px solid var(--border); padding: 10px 12px; }
-  .job-badge { font-family: 'DM Mono', monospace; font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal); margin-bottom: 5px; display: none; }
-  .job-badge.visible { display: block; }
-  .job-num { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 0.14em; color: var(--orange); margin-bottom: 8px; }
-  .job-field { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-  .job-field label { font-family: 'DM Mono', monospace; font-size: 0.58rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); min-width: 56px; flex-shrink: 0; }
-  .job-field input { flex: 1; border: none; border-bottom: 1px solid var(--border-l); outline: none; font-family: 'DM Sans', sans-serif; font-size: 0.72rem; color: var(--text); background: transparent; padding: 1px 2px; min-width: 0; }
-  .job-field input:focus { border-bottom-color: var(--teal); }
-  .job-field input::placeholder { color: #bbb8b0; }
+  .job {
+    background: var(--row);
+    border: 1px solid var(--row-line);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color .5s ease;
+  }
+  .job.just-updated { border-color: var(--amber); }
 
-  .job-body { padding: 10px 12px; }
-  .category { margin-bottom: 12px; }
-  .cat-header { display: flex; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 3px; margin-bottom: 6px; gap: 4px; }
-  .cat-title { font-family: 'DM Mono', monospace; font-size: 0.62rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--teal); flex: 1; outline: none; background: transparent; border: none; min-width: 0; cursor: default; }
-  body.edit-mode .cat-title { cursor: text; }
-  .subcategory { margin-bottom: 7px; padding-left: 2px; }
-  .sub-header { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; }
-  .sub-title { font-size: 0.68rem; font-weight: 600; color: var(--subcat); outline: none; background: transparent; border: none; flex: 1; min-width: 0; font-family: 'DM Sans', sans-serif; cursor: default; }
-  body.edit-mode .sub-title { cursor: text; }
-  .items { list-style: none; padding-left: 8px; }
-  .item-row { display: flex; align-items: center; gap: 4px; padding: 1px 0; }
-  .item-bullet { color: var(--orange); font-size: 0.65rem; flex-shrink: 0; user-select: none; }
-  .item-bullet.faded { opacity: 0.2; }
-  .item-input { font-size: 0.67rem; color: var(--item); outline: none; background: transparent; border: none; border-bottom: 1px solid transparent; flex: 1; min-width: 0; font-family: 'DM Sans', sans-serif; line-height: 1.6; cursor: default; pointer-events: none; }
-  body.edit-mode .item-input { cursor: text; pointer-events: auto; }
-  body.edit-mode .item-input:focus { border-bottom-color: var(--border-l); }
-  .item-input::placeholder { color: #bbb8b0; }
-  .item-input.checked { text-decoration: line-through; opacity: 0.38; }
+  .job-head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--row-line);
+  }
+  .job-head .num {
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 26px;
+    color: var(--amber);
+    min-width: 100px;
+    white-space: nowrap;
+  }
+  .job-head .who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .job-head .cust {
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: 0.02em;
+  }
+  .job-head .cust.placeholder { color: var(--ink-faint); font-weight: 500; }
+  .job-head .unit { color: var(--ink-dim); font-size: 14px; }
+  .job-head .right { margin-left: auto; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+  .job-head .tech { color: var(--ink-dim); font-size: 14px; }
+  .job-head .tech b { color: var(--ink); font-weight: 600; }
+  .status { font-size: 13px; padding: 5px 12px; border-radius: 30px; font-weight: 600; }
+  .status.shop  { background: rgba(52,199,89,.15);  color: var(--green); border: 1px solid rgba(52,199,89,.4); }
+  .status.sched { background: rgba(59,130,246,.15); color: var(--blue);  border: 1px solid rgba(59,130,246,.4); }
+  .status.parts { background: rgba(255,176,31,.15); color: var(--amber); border: 1px solid rgba(255,176,31,.4); }
+  .status.neutral { background: rgba(154,161,172,.14); color: var(--ink-dim); border: 1px solid rgba(154,161,172,.3); }
 
-  /* ── Checkboxes ── */
-  .item-check { width: 13px; height: 13px; flex-shrink: 0; cursor: pointer; accent-color: var(--teal); }
-  body.edit-mode .item-check { display: none; }
+  .tasks {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
+    padding: 14px 18px 16px;
+  }
+  .task {
+    background: var(--card);
+    color: var(--card-ink);
+    border-radius: 8px;
+    border: 1px solid var(--card-line);
+    overflow: hidden;
+    cursor: pointer;
+    transition: opacity .2s ease;
+    user-select: none;
+  }
+  .task .cat {
+    background: var(--card-ink);
+    color: #fff;
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 7px 11px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .task .cat .auto { font-size: 9px; background: var(--amber); color: #1a1205; padding: 1px 6px; border-radius: 20px; }
+  .task .steps { padding: 9px 11px; font-size: 13.5px; line-height: 1.45; }
+  .task.complete { opacity: .5; }
+  .task.complete .cat { background: var(--green); }
 
-  .edit-only { display: none !important; }
-  body.edit-mode .edit-only { display: flex !important; }
-  body.edit-mode button.edit-only { display: inline-flex !important; }
-  body.edit-mode .btn-add-cat { display: block !important; }
-  body.edit-mode .btn-add-sub, body.edit-mode .btn-add-item { display: block !important; }
-  .btn-del { background: none; border: none; cursor: pointer; color: #ccc; font-size: 0.85rem; line-height: 1; padding: 0 2px; flex-shrink: 0; font-family: monospace; }
-  .btn-del:hover { color: #e07060; }
-  .btn-add-item { display: none; background: none; border: none; cursor: pointer; font-size: 0.6rem; font-family: 'DM Mono', monospace; letter-spacing: 0.04em; color: var(--muted); padding: 2px 0 2px 8px; text-align: left; width: 100%; }
-  .btn-add-item:hover { color: var(--teal); }
-  .btn-add-sub { display: none; background: none; border: none; cursor: pointer; font-size: 0.6rem; font-family: 'DM Mono', monospace; color: var(--muted); padding: 2px 0; letter-spacing: 0.04em; }
-  .btn-add-sub:hover { color: var(--teal); }
-  .btn-add-cat { display: none; background: none; border: 1px dashed var(--border-l); border-radius: 2px; cursor: pointer; font-size: 0.6rem; font-family: 'DM Mono', monospace; color: var(--muted); padding: 4px 8px; width: 100%; text-align: left; margin-top: 4px; letter-spacing: 0.04em; }
-  .btn-add-cat:hover { color: var(--teal); border-color: var(--teal); }
-
-  /* ── Empty state ── */
-  .job-empty-state { padding: 24px 12px; text-align: center; }
-  .job-empty-state .empty-icon { font-size: 1.4rem; margin-bottom: 8px; opacity: 0.25; }
-  .job-empty-state .empty-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-  .job-empty-state .empty-sub { font-family: 'DM Mono', monospace; font-size: 0.58rem; color: var(--border-l); margin-top: 4px; letter-spacing: 0.04em; }
+  .empty {
+    padding: 26px 14px;
+    text-align: center;
+    color: var(--ink-faint);
+  }
+  .empty .big {
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .empty .sub { font-size: 13px; }
 
   @media print {
-    #auth-gate { display: none !important; }
-    body { background: white; padding: 10px; color: #111; }
-    header { background: white; border-bottom: 1px solid #ccc; }
-    header h1 { color: #111; }
-    header h1 span { color: #2a7a6a; }
-    .toolbar { display: none !important; }
-    .edit-only { display: none !important; }
-    .btn-add-item, .btn-add-sub, .btn-add-cat, .job-badge { display: none !important; }
-    .item-check { display: none !important; }
-    .board { gap: 8px; }
-    .job-card { background: white; border: 1px solid #bbb; }
-    .job-header { background: #f5f5f5; }
-    .job-num { color: #c8763a; }
-    .cat-title { color: #2a7a6a; }
-    .item-bullet { color: #c8763a; }
-    .item-input, .sub-title { color: #333; }
-    .item-input.checked { text-decoration: line-through; opacity: 0.4; }
-    .job-field input { color: #111; border-bottom-color: #ccc; }
+    body { background: #fff; color: #111; padding: 10px; }
+    .board-head { border-color: #ccc; }
+    .board-head .title, .board-head .date, .sync-label { color: #111; }
+    .board-head button, .sync-dot { display: none; }
+    .job { background: #fff; border-color: #bbb; break-inside: avoid; }
+    .job-head { border-color: #ddd; }
+    .job-head .cust, .job-head .unit, .job-head .tech { color: #111; }
+    .task { border-color: #bbb; }
+    .task.complete { opacity: .55; }
     @page { size: landscape; margin: 0.35in; }
   }
-  @media (max-width: 900px) { .board { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 720px) {
+    .job-head { flex-wrap: wrap; }
+    .job-head .num { min-width: auto; }
+    .job-head .right { margin-left: 0; width: 100%; }
+    .tasks { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
 
-<div id="auth-gate" style="display:none;"></div>
-
-<div id="app">
-  <header>
-    <h1>TCG <span>Daily Jobs</span></h1>
+<div class="board-head">
+  <div class="title">TCG <span>//</span> Daily Jobs</div>
+  <div class="right">
     <div class="date" id="date-display"></div>
-    <div class="toolbar">
-      <button id="btn-edit" onclick="toggleEdit()">Edit</button>
-      <button onclick="window.print()">Print</button>
-      <span><span class="sync-dot" id="sync-dot"></span><span class="sync-label" id="sync-label">connecting...</span></span>
-      <span class="user-info" id="user-info">board view</span>
-    </div>
-  </header>
-  <div class="board-wrap">
-    <div class="board" id="board"></div>
+    <div class="sync"><span class="sync-dot" id="sync-dot"></span><span class="sync-label" id="sync-label">connecting…</span></div>
+    <button onclick="window.print()">Print</button>
   </div>
 </div>
+
+<div class="board" id="board"></div>
+
+<!-- ============================================================
+     DATA CONTRACT (shared with the invoice parser)
+     ------------------------------------------------------------
+     jobs/slot{1-4} = {
+       customer: string,
+       vehicle:  string,
+       tech:     string,
+       status:   string   (optional: "In Shop" | "Awaiting Parts" |
+                            "Scheduled" | etc. — drives the badge color)
+       tasks: [
+         { category: string, steps: string, dynamic?: boolean }
+       ]
+     }
+
+     done/slot{1-4} = { "<taskIndex>": true }   // task marked complete
+
+     Backward compatible: if a slot has the OLD shape
+     (categories -> subs -> items) instead of `tasks`, the board
+     flattens each category into a single comma-joined task line.
+     ============================================================ -->
 
 <script type="module">
 import { initializeApp }                           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -167,284 +242,161 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
-
-document.getElementById('app').style.display = 'block';
-
-function startListening() {
-  onValue(ref(db, 'jobs'), (snapshot) => {
-    const data = snapshot.val() || {};
-    setSyncStatus(true);
-    for (let i = 1; i <= 4; i++) {
-      if (data[`slot${i}`]) {
-        applyJobToSlot(i, data[`slot${i}`]);
-      } else {
-        clearSlotDisplay(i);
-      }
-    }
-  }, () => setSyncStatus(false));
-}
+const doneListeners = {};
 
 function setSyncStatus(ok) {
   document.getElementById('sync-dot').className     = 'sync-dot ' + (ok ? 'live' : 'error');
   document.getElementById('sync-label').textContent = ok ? 'live' : 'disconnected';
 }
 
-/* ── Checked state ── */
-const checkedListeners = {};
+onValue(ref(db, 'jobs'), (snapshot) => {
+  const data = snapshot.val() || {};
+  setSyncStatus(true);
+  for (let i = 1; i <= 4; i++) {
+    if (data[`slot${i}`]) window.applyJobToSlot(i, data[`slot${i}`]);
+    else                  window.clearSlotDisplay(i);
+  }
+}, () => setSyncStatus(false));
 
-window.setupCheckedListener = function(slotNum) {
-  if (checkedListeners[slotNum]) checkedListeners[slotNum]();
-  checkedListeners[slotNum] = onValue(ref(db, `checked/slot${slotNum}`), (snapshot) => {
-    const data = snapshot.val() || {};
-    const card = document.getElementById(`card-${slotNum}`);
-    if (!card) return;
-    card.querySelectorAll('.item-row[data-item-key]').forEach(li => {
-      const key = li.dataset.itemKey;
-      const cb     = li.querySelector('.item-check');
-      const inp    = li.querySelector('.item-input');
-      const bullet = li.querySelector('.item-bullet');
-      const isChecked = !!data[key];
-      if (cb)     cb.checked = isChecked;
-      if (inp)    inp.classList.toggle('checked', isChecked);
-      if (bullet) bullet.classList.toggle('faded', isChecked);
+/* live per-slot completion state */
+window.setupDoneListener = function(slotNum) {
+  if (doneListeners[slotNum]) doneListeners[slotNum]();
+  doneListeners[slotNum] = onValue(ref(db, `done/slot${slotNum}`), (snap) => {
+    const data = snap.val() || {};
+    const container = document.getElementById(`tasks-${slotNum}`);
+    if (!container) return;
+    container.querySelectorAll('.task[data-task-index]').forEach(t => {
+      t.classList.toggle('complete', !!data[t.dataset.taskIndex]);
     });
   });
 };
 
-window.setCheckedInDB = function(slotKey, itemKey, checked) {
-  if (checked) {
-    set(ref(db, `checked/${slotKey}/${itemKey}`), true);
-  } else {
-    remove(ref(db, `checked/${slotKey}/${itemKey}`));
-  }
+window.setDoneInDB = function(slotNum, taskIndex, done) {
+  const path = `done/slot${slotNum}/${taskIndex}`;
+  if (done) set(ref(db, path), true);
+  else      remove(ref(db, path));
 };
-
-startListening();
 </script>
 
 <script>
 document.getElementById('date-display').textContent =
-  new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
 
-const slotJobData = {};
+function statusClass(status) {
+  const s = (status || '').toLowerCase();
+  if (s.includes('shop'))                       return 'shop';
+  if (s.includes('part'))                       return 'parts';
+  if (s.includes('schedul'))                    return 'sched';
+  if (!s)                                        return '';
+  return 'neutral';
+}
 
-window.applyJobToSlot = function(slotNum, jobData) {
-  slotJobData[slotNum] = jobData;
-  const card = document.getElementById(`card-${slotNum}`);
-  if (!card) return;
-  document.getElementById(`j${slotNum}-customer`).value = jobData.customer || '';
-  document.getElementById(`j${slotNum}-vehicle`).value  = jobData.vehicle  || '';
-  document.getElementById(`j${slotNum}-tech`).value     = jobData.tech     || '';
-  const body = document.getElementById(`body-${slotNum}`);
-  body.innerHTML = '';
-  (jobData.categories || []).forEach((sec, catIdx) => body.appendChild(makeCategory(sec, catIdx)));
-  body.appendChild(makeAddCatButton(body));
-  const badge = card.querySelector('.job-badge');
-  if (badge) { badge.textContent = '● from invoice'; badge.classList.add('visible'); }
-  card.classList.add('just-updated');
-  setTimeout(() => card.classList.remove('just-updated'), 2000);
-  if (window.setupCheckedListener) window.setupCheckedListener(slotNum);
-};
-
-window.clearSlotDisplay = function(slotNum) {
-  delete slotJobData[slotNum];
-  const card = document.getElementById(`card-${slotNum}`);
-  if (!card) return;
-  document.getElementById(`j${slotNum}-customer`).value = '';
-  document.getElementById(`j${slotNum}-vehicle`).value  = '';
-  document.getElementById(`j${slotNum}-tech`).value     = '';
-  const body = document.getElementById(`body-${slotNum}`);
-  body.innerHTML = '';
-  body.appendChild(makeEmptyState());
-  const badge = card.querySelector('.job-badge');
-  if (badge) { badge.textContent = ''; badge.classList.remove('visible'); }
-};
+/* Resolve the task list for a slot, supporting both new and old shapes */
+function resolveTasks(jobData) {
+  if (Array.isArray(jobData.tasks)) return jobData.tasks;
+  if (Array.isArray(jobData.categories)) {
+    return jobData.categories.map(c => ({
+      category: c.cat || c.category || 'Task',
+      steps: (c.subs || [])
+        .flatMap(s => s.items || [])
+        .filter(Boolean)
+        .join(', ')
+    }));
+  }
+  return [];
+}
 
 function renderBoard() {
   const board = document.getElementById('board');
   board.innerHTML = '';
   for (let i = 1; i <= 4; i++) {
-    const card = document.createElement('div');
-    card.className = 'job-card';
-    card.id = `card-${i}`;
-    card.dataset.slot = i;
-
-    const hdr = document.createElement('div');
-    hdr.className = 'job-header';
-    hdr.innerHTML = `
-      <div class="job-badge" id="badge-${i}"></div>
-      <div class="job-num">Job ${i}</div>
-      <div class="job-field"><label>Customer</label><input id="j${i}-customer" placeholder="Name" autocomplete="off"></div>
-      <div class="job-field"><label>Vehicle</label><input id="j${i}-vehicle" placeholder="Year / Make / Model" autocomplete="off"></div>
-      <div class="job-field"><label>Tech</label><input id="j${i}-tech" placeholder="Initials" autocomplete="off"></div>
+    const job = document.createElement('div');
+    job.className = 'job';
+    job.id = `job-${i}`;
+    job.innerHTML = `
+      <div class="job-head">
+        <div class="num">Job ${i}</div>
+        <div class="who">
+          <div class="cust placeholder" id="cust-${i}">Open</div>
+          <div class="unit" id="unit-${i}"></div>
+        </div>
+        <div class="right">
+          <div class="tech" id="tech-${i}"></div>
+          <div class="status" id="status-${i}" style="display:none"></div>
+        </div>
+      </div>
+      <div class="tasks" id="tasks-${i}"></div>
     `;
-    card.appendChild(hdr);
-
-    const body = document.createElement('div');
-    body.className = 'job-body';
-    body.id = `body-${i}`;
-    body.appendChild(makeEmptyState());
-    card.appendChild(body);
-    board.appendChild(card);
+    board.appendChild(job);
+    clearSlotDisplay(i);
   }
 }
 
-function makeEmptyState() {
-  const div = document.createElement('div');
-  div.className = 'job-empty-state';
-  div.innerHTML = `
-    <div class="empty-icon">📋</div>
-    <div class="empty-label">Pending Job Details</div>
-    <div class="empty-sub">Push a job from the invoice parser</div>
-  `;
-  return div;
-}
+window.applyJobToSlot = function(slotNum, jobData) {
+  const job = document.getElementById(`job-${slotNum}`);
+  if (!job) return;
 
-function makeAddCatButton(body) {
-  const btn = document.createElement('button');
-  btn.className = 'btn-add-cat';
-  btn.textContent = '+ add category';
-  btn.onclick = () => {
-    const newCat = makeCategory({ cat: 'New Category', subs: [] }, undefined);
-    body.insertBefore(newCat, btn);
-    const t = newCat.querySelector('.cat-title');
-    t.contentEditable = 'true'; t.focus();
-    const r = document.createRange(); r.selectNodeContents(t);
-    window.getSelection().removeAllRanges(); window.getSelection().addRange(r);
-  };
-  return btn;
-}
+  const cust = document.getElementById(`cust-${slotNum}`);
+  cust.textContent = jobData.customer || 'Open';
+  cust.classList.toggle('placeholder', !jobData.customer);
 
-function makeItem(text, itemKey) {
-  const li = document.createElement('li');
-  li.className = 'item-row';
-  if (itemKey) li.dataset.itemKey = itemKey;
+  document.getElementById(`unit-${slotNum}`).textContent = jobData.vehicle || '';
 
-  const cb = document.createElement('input');
-  cb.type = 'checkbox';
-  cb.className = 'item-check';
-  cb.addEventListener('change', () => {
-    inp.classList.toggle('checked', cb.checked);
-    bullet.classList.toggle('faded', cb.checked);
-    const card = li.closest('.job-card');
-    const slotNum = card ? card.dataset.slot : null;
-    if (slotNum && itemKey && window.setCheckedInDB) {
-      window.setCheckedInDB(`slot${slotNum}`, itemKey, cb.checked);
-    }
-  });
+  const tech = document.getElementById(`tech-${slotNum}`);
+  tech.innerHTML = jobData.tech ? `Tech · <b>${jobData.tech}</b>` : '';
 
-  const bullet = document.createElement('span');
-  bullet.className = 'item-bullet';
-  bullet.textContent = '–';
+  const badge = document.getElementById(`status-${slotNum}`);
+  if (jobData.status) {
+    badge.textContent = jobData.status;
+    badge.className = 'status label ' + statusClass(jobData.status);
+    badge.style.display = '';
+  } else {
+    badge.style.display = 'none';
+  }
 
-  const inp = document.createElement('input');
-  inp.type = 'text';
-  inp.className = 'item-input';
-  inp.value = text;
-  inp.placeholder = 'Task item...';
-  inp.readOnly = true;
+  const tasks = resolveTasks(jobData);
+  const container = document.getElementById(`tasks-${slotNum}`);
+  if (!tasks.length) {
+    container.innerHTML =
+      '<div class="empty"><div class="big">Pending job details</div>' +
+      '<div class="sub">Push a job from the invoice parser</div></div>';
+  } else {
+    container.innerHTML = tasks.map((t, idx) => `
+      <div class="task" data-task-index="${idx}">
+        <div class="cat">
+          <span>${t.category || 'Task'}</span>
+          ${t.dynamic ? '<span class="auto">AUTO</span>' : ''}
+        </div>
+        <div class="steps">${t.steps || ''}</div>
+      </div>`).join('');
+    container.querySelectorAll('.task').forEach(el => {
+      el.addEventListener('click', () => {
+        const idx = el.dataset.taskIndex;
+        const nowComplete = !el.classList.contains('complete');
+        el.classList.toggle('complete', nowComplete);
+        if (window.setDoneInDB) window.setDoneInDB(slotNum, idx, nowComplete);
+      });
+    });
+  }
 
-  const del = document.createElement('button');
-  del.className = 'btn-del edit-only';
-  del.textContent = '×';
-  del.onclick = () => li.remove();
+  job.classList.add('just-updated');
+  setTimeout(() => job.classList.remove('just-updated'), 2000);
+  if (window.setupDoneListener) window.setupDoneListener(slotNum);
+};
 
-  li.appendChild(cb);
-  li.appendChild(bullet);
-  li.appendChild(inp);
-  li.appendChild(del);
-  return li;
-}
-
-function makeSubcategory(sub, catIdx, subIdx) {
-  const wrap = document.createElement('div');
-  wrap.className = 'subcategory';
-  const hdr = document.createElement('div');
-  hdr.className = 'sub-header';
-  const title = document.createElement('div');
-  title.className = 'sub-title';
-  title.contentEditable = 'false';
-  title.textContent = sub.name;
-  const del = document.createElement('button');
-  del.className = 'btn-del edit-only';
-  del.textContent = '×';
-  del.onclick = () => wrap.remove();
-  hdr.appendChild(title);
-  hdr.appendChild(del);
-  wrap.appendChild(hdr);
-
-  const ul = document.createElement('ul');
-  ul.className = 'items';
-  sub.items.forEach((it, itemIdx) => {
-    const itemKey = (catIdx !== undefined && subIdx !== undefined)
-      ? `${catIdx}-${subIdx}-${itemIdx}`
-      : undefined;
-    ul.appendChild(makeItem(it, itemKey));
-  });
-
-  const addItem = document.createElement('button');
-  addItem.className = 'btn-add-item';
-  addItem.textContent = '+ add item';
-  addItem.onclick = () => {
-    const li = makeItem('', undefined);
-    ul.insertBefore(li, addItem);
-    const inp = li.querySelector('.item-input');
-    inp.readOnly = false;
-    inp.focus();
-  };
-  ul.appendChild(addItem);
-  wrap.appendChild(ul);
-  return wrap;
-}
-
-function makeCategory(section, catIdx) {
-  const catEl = document.createElement('div');
-  catEl.className = 'category';
-  const hdr = document.createElement('div');
-  hdr.className = 'cat-header';
-  const title = document.createElement('div');
-  title.className = 'cat-title';
-  title.contentEditable = 'false';
-  title.textContent = section.cat;
-  const del = document.createElement('button');
-  del.className = 'btn-del edit-only';
-  del.textContent = '×';
-  del.onclick = () => catEl.remove();
-  hdr.appendChild(title);
-  hdr.appendChild(del);
-  catEl.appendChild(hdr);
-
-  section.subs.forEach((sub, subIdx) => catEl.appendChild(makeSubcategory(sub, catIdx, subIdx)));
-
-  const addSub = document.createElement('button');
-  addSub.className = 'btn-add-sub';
-  addSub.textContent = '+ add subcategory';
-  addSub.onclick = () => {
-    const newSub = makeSubcategory({ name: 'New Subcategory', items: [] }, undefined, undefined);
-    catEl.insertBefore(newSub, addSub);
-    const t = newSub.querySelector('.sub-title');
-    t.contentEditable = 'true'; t.focus();
-    const r = document.createRange(); r.selectNodeContents(t);
-    window.getSelection().removeAllRanges(); window.getSelection().addRange(r);
-  };
-  catEl.appendChild(addSub);
-  return catEl;
-}
-
-let editMode = false;
-function toggleEdit() {
-  editMode = !editMode;
-  document.body.classList.toggle('edit-mode', editMode);
-  const btn = document.getElementById('btn-edit');
-  btn.classList.toggle('active', editMode);
-  btn.textContent = editMode ? 'Done' : 'Edit';
-  document.querySelectorAll('.cat-title, .sub-title').forEach(el => {
-    el.contentEditable = editMode ? 'true' : 'false';
-  });
-  document.querySelectorAll('.item-input').forEach(el => {
-    el.readOnly = !editMode;
-  });
-}
+window.clearSlotDisplay = function(slotNum) {
+  const cust = document.getElementById(`cust-${slotNum}`);
+  if (cust) { cust.textContent = 'Open'; cust.classList.add('placeholder'); }
+  const unit = document.getElementById(`unit-${slotNum}`); if (unit) unit.textContent = '';
+  const tech = document.getElementById(`tech-${slotNum}`); if (tech) tech.innerHTML = '';
+  const badge = document.getElementById(`status-${slotNum}`); if (badge) badge.style.display = 'none';
+  const container = document.getElementById(`tasks-${slotNum}`);
+  if (container) {
+    container.innerHTML =
+      '<div class="empty"><div class="big">Open bay</div>' +
+      '<div class="sub">Push a job from the invoice parser</div></div>';
+  }
+};
 
 renderBoard();
 </script>
