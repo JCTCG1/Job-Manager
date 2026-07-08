@@ -1,234 +1,262 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TCG Daily Jobs</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TCG Invoice Parser</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #14161b;
-    --row: #1d2026;
-    --row-line: #2f343d;
-    --ink: #f4f5f7;
-    --ink-dim: #9aa1ac;
-    --ink-faint: #6b7280;
-    --amber: #ffb01f;
-    --card: #ffffff;
-    --card-ink: #14171c;
-    --card-line: #e4e7ec;
-    --green: #34c759;
-    --blue: #3b82f6;
+    --bg:#1c1c1c;--surface:#252525;--card:#2c2c2c;--border:#3a3a3a;--border-l:#484848;
+    --teal:#4a9e8e;--orange:#c8763a;--text:#ede8e0;--muted:#7a756e;--light:#b0a898;
+    --subcat:#a09888;--item:#c0b8a8;
   }
-  body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: 'Inter', system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    min-height: 100vh;
-    padding-bottom: 40px;
-  }
-  .label {
-    font-family: 'Barlow Semi Condensed', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:0 0 48px}
+  #auth-gate{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)}
+  .auth-box{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:48px 40px;text-align:center;max-width:360px;width:100%}
+  .auth-box h1{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.12em;color:var(--text);margin-bottom:4px}
+  .auth-box h1 span{color:var(--teal)}
+  .auth-box p{font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:32px}
+  .btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:11px 16px;border:1px solid var(--border-l);border-radius:3px;background:var(--card);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;color:var(--text);transition:border-color .15s,background .15s}
+  .btn-google:hover{border-color:var(--teal);background:#333}
+  .btn-google svg{flex-shrink:0}
+  .auth-error{margin-top:14px;font-family:'DM Mono',monospace;font-size:.68rem;color:#e07060;display:none}
+  #app{display:none}
+  header{background:#141414;border-bottom:1px solid var(--border);padding:14px 24px;text-align:center}
+  header h1{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.14em;color:var(--text);line-height:1}
+  header h1 span{color:var(--teal)}
+  header .sub{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);margin-top:4px;letter-spacing:.08em;text-transform:uppercase}
+  .top-bar{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--border-l);display:inline-block;transition:background .3s}
+  .sync-dot.live{background:var(--teal);box-shadow:0 0 5px var(--teal)}
+  .sync-dot.error{background:#e07060}
+  .sync-label{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.04em}
+  .user-info{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px}
+  .btn-signout{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;background:none;border:1px solid var(--border-l);border-radius:2px;padding:4px 12px;cursor:pointer;color:var(--muted)}
+  .btn-signout:hover{border-color:var(--muted);color:var(--text)}
+  .page-wrap{padding:24px 20px;max-width:900px;margin:0 auto}
+  .input-panel{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:20px;margin-bottom:24px}
+  .input-panel h2{font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .fields-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+  .field-group{display:flex;flex-direction:column;gap:4px}
+  .field-group label{font-family:'DM Mono',monospace;font-size:.6rem;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+  .field-group input{border:1px solid var(--border-l);border-radius:2px;padding:7px 8px;font-family:'DM Sans',sans-serif;font-size:.78rem;outline:none;color:var(--text);background:var(--card);transition:border-color .15s}
+  .field-group input:focus{border-color:var(--teal)}
+  .field-group input::placeholder{color:#4a4a4a}
+  textarea{width:100%;min-height:160px;border:1px solid var(--border-l);border-radius:2px;padding:10px;font-family:'DM Mono',monospace;font-size:.72rem;color:var(--text);resize:vertical;outline:none;background:var(--card);line-height:1.6;transition:border-color .15s}
+  textarea:focus{border-color:var(--teal)}
+  textarea::placeholder{color:#4a4a4a}
+  .parse-row{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .btn-primary{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:8px 20px;border-radius:2px;cursor:pointer;border:1px solid var(--teal);background:var(--teal);color:#fff;transition:opacity .15s}
+  .btn-primary:hover{opacity:.85}
+  .btn-primary:disabled{opacity:.35;cursor:not-allowed}
+  .btn-secondary{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:8px 16px;border-radius:2px;cursor:pointer;border:1px solid var(--border-l);background:transparent;color:var(--light);transition:all .15s}
+  .btn-secondary:hover{border-color:var(--muted);color:var(--text)}
+  .btn-green{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:8px 20px;border-radius:2px;cursor:pointer;border:1px solid var(--orange);background:var(--orange);color:#fff;transition:opacity .15s}
+  .btn-green:hover{opacity:.85}
+  .btn-green:disabled{opacity:.35;cursor:not-allowed}
+  .status{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);letter-spacing:.04em}
+  .status.loading{color:var(--light)}
+  .status.error{color:#e07060}
+  .status.done{color:var(--teal)}
+  .result-area{max-width:900px;margin:0 auto;padding:0 20px}
+  .result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .result-header h2{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.12em;color:var(--muted)}
+  .result-actions{display:flex;gap:8px}
 
-  /* ── Header ── */
-  .board-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 14px 26px;
-    border-bottom: 1px solid var(--row-line);
-    flex-wrap: wrap;
-  }
-  .board-head .title {
-    font-family: 'Barlow Semi Condensed', sans-serif;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    font-size: 24px;
-  }
-  .board-head .title span { color: var(--amber); }
-  .board-head .right { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
-  .board-head .date { color: var(--ink-dim); font-size: 14px; }
-  .sync { display: flex; align-items: center; gap: 7px; }
-  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-faint); transition: background .3s; }
-  .sync-dot.live { background: var(--green); box-shadow: 0 0 6px var(--green); }
-  .sync-dot.error { background: #e07060; }
-  .sync-label { color: var(--ink-dim); font-size: 13px; }
-  .board-head button {
-    font-family: 'Barlow Semi Condensed', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 600;
-    font-size: 13px;
-    background: var(--row);
-    color: var(--ink);
-    border: 1px solid var(--row-line);
-    border-radius: 8px;
-    padding: 8px 16px;
-    cursor: pointer;
-  }
-  .board-head button:hover { border-color: var(--amber); color: var(--amber); }
+  .job-card{background:var(--card);border:1px solid var(--border);border-radius:3px;overflow:hidden}
+  .job-header{background:#222;border-bottom:1px solid var(--border);padding:14px 16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .job-info-item{display:flex;flex-direction:column;gap:3px}
+  .job-info-item .label{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .job-info-item .value{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.06em;color:var(--text)}
 
-  /* ── Board ── */
-  .board { padding: 18px 22px; display: flex; flex-direction: column; gap: 16px; max-width: 1700px; margin: 0 auto; }
+  /* Job card body = board view tiles (single source of truth) */
+  .job-body{padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+  .task-tile{border:1px solid var(--border-l);border-radius:3px;overflow:hidden;background:var(--surface)}
+  .task-tile .t-cat{background:#1f1f1f;color:var(--teal);font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:7px 10px;border-bottom:1px solid var(--border)}
+  .task-tile .t-steps{padding:8px 10px;font-size:.68rem;color:var(--item);line-height:1.5}
 
-  .job {
-    background: var(--row);
-    border: 1px solid var(--row-line);
-    border-radius: 12px;
-    overflow: hidden;
-    transition: border-color .5s ease;
-  }
-  .job.just-updated { border-color: var(--amber); }
+  .spinner{display:inline-block;width:11px;height:11px;border:2px solid var(--border-l);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:4px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .empty-state{text-align:center;padding:48px 20px;color:var(--muted);font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.06em;border:1px dashed var(--border-l);border-radius:3px}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;align-items:center;justify-content:center}
+  .modal-overlay.open{display:flex}
+  .modal{background:var(--surface);border:1px solid var(--border-l);border-radius:4px;padding:24px;width:340px;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+  .modal h3{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.12em;color:var(--text);margin-bottom:16px}
+  .slot-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+  .slot-btn{font-family:'DM Mono',monospace;font-size:.68rem;padding:10px;border:1px solid var(--border-l);border-radius:3px;background:var(--card);cursor:pointer;text-align:left;transition:border-color .15s;color:var(--text)}
+  .slot-btn:hover{border-color:var(--teal);background:#333}
+  .slot-btn .slot-num{font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.1em;color:var(--orange);display:block;margin-bottom:2px}
+  .slot-btn .slot-name{font-size:.6rem;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .slot-btn.occupied{border-color:var(--orange)}
+  .modal-cancel{font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;background:none;border:1px solid var(--border-l);border-radius:2px;padding:6px 14px;cursor:pointer;color:var(--muted)}
+  .modal-cancel:hover{border-color:var(--muted);color:var(--text)}
 
-  .job-head {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 12px 18px;
-    border-bottom: 1px solid var(--row-line);
-  }
-  .job-head .num {
-    font-family: 'Barlow Semi Condensed', sans-serif;
-    font-weight: 700;
-    font-size: 26px;
-    color: var(--amber);
-    min-width: 100px;
-    white-space: nowrap;
-  }
-  .job-head .who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  .job-head .cust {
-    font-family: 'Barlow Semi Condensed', sans-serif;
-    font-weight: 600;
-    font-size: 22px;
-    letter-spacing: 0.02em;
-  }
-  .job-head .cust.placeholder { color: var(--ink-faint); font-weight: 500; }
-  .job-head .unit { color: var(--ink-dim); font-size: 14px; }
-  .job-head .right { margin-left: auto; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
-  .job-head .tech { color: var(--ink-dim); font-size: 14px; }
-  .job-head .tech b { color: var(--ink); font-weight: 600; }
-  .status { font-size: 13px; padding: 5px 12px; border-radius: 30px; font-weight: 600; }
-  .status.shop  { background: rgba(52,199,89,.15);  color: var(--green); border: 1px solid rgba(52,199,89,.4); }
-  .status.sched { background: rgba(59,130,246,.15); color: var(--blue);  border: 1px solid rgba(59,130,246,.4); }
-  .status.parts { background: rgba(255,176,31,.15); color: var(--amber); border: 1px solid rgba(255,176,31,.4); }
-  .status.neutral { background: rgba(154,161,172,.14); color: var(--ink-dim); border: 1px solid rgba(154,161,172,.3); }
-
-  .tasks {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 10px;
-    padding: 14px 18px 16px;
-  }
-  .task {
-    background: var(--card);
-    color: var(--card-ink);
-    border-radius: 8px;
-    border: 1px solid var(--card-line);
-    overflow: hidden;
-    cursor: pointer;
-    transition: opacity .2s ease;
-    user-select: none;
-  }
-  .task .cat {
-    background: var(--card-ink);
-    color: #fff;
-    font-family: 'Barlow Semi Condensed', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    font-weight: 700;
-    font-size: 13px;
-    padding: 7px 11px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-  }
-  .task .cat .auto { font-size: 9px; background: var(--amber); color: #1a1205; padding: 1px 6px; border-radius: 20px; }
-  .task .steps { padding: 9px 11px; font-size: 13.5px; line-height: 1.45; }
-  .task.complete { opacity: .5; }
-  .task.complete .cat { background: var(--green); }
-
-  .empty {
-    padding: 26px 14px;
-    text-align: center;
-    color: var(--ink-faint);
-  }
-  .empty .big {
-    font-family: 'Barlow Semi Condensed', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--ink-dim);
-    font-size: 15px;
-    margin-bottom: 4px;
-  }
-  .empty .sub { font-size: 13px; }
+  /* ── History ── */
+  .history-wrap{max-width:900px;margin:28px auto 0;padding:0 20px 32px}
+  .history-hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:10px}
+  .history-hdr h2{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.12em;color:var(--muted)}
+  .history-count{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:10px;padding:2px 8px}
+  .history-empty{text-align:center;padding:28px;color:var(--muted);font-family:'DM Mono',monospace;font-size:.65rem;border:1px dashed var(--border-l);border-radius:3px;letter-spacing:.06em}
+  .h-entry{background:var(--surface);border:1px solid var(--border);border-radius:3px;margin-bottom:6px;overflow:hidden;transition:border-color .15s}
+  .h-entry:hover{border-color:var(--border-l)}
+  .h-entry-hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;cursor:pointer;gap:12px;user-select:none}
+  .h-meta{display:flex;align-items:center;gap:12px;flex:1;min-width:0;overflow:hidden}
+  .h-ts{font-family:'DM Mono',monospace;font-size:.56rem;color:var(--muted);flex-shrink:0}
+  .h-customer{font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.06em;color:var(--text);flex-shrink:0}
+  .h-vehicle{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .h-tech{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--teal);flex-shrink:0}
+  .h-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .h-push-btn{font-size:.58rem!important;padding:3px 8px!important;letter-spacing:.06em!important}
+  .h-toggle{font-family:'DM Mono',monospace;font-size:.75rem;color:var(--muted);width:14px;text-align:center;flex-shrink:0;transition:color .15s}
+  .h-entry.expanded{border-color:var(--border-l)}
+  .h-entry.expanded .h-toggle{color:var(--teal)}
+  .h-entry-body{display:none;border-top:1px solid var(--border);padding:14px}
+  .h-entry.expanded .h-entry-body{display:block}
+  .h-task-list{display:flex;flex-direction:column;gap:8px}
+  .h-task-row{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:3px;background:var(--card)}
+  .h-task-check{width:13px;height:13px;flex-shrink:0;cursor:pointer;accent-color:var(--teal);margin-top:2px}
+  .h-task-text{flex:1;min-width:0}
+  .h-task-cat{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:2px}
+  .h-task-steps{font-size:.66rem;color:var(--item);line-height:1.5}
+  .h-task-row.checked .h-task-cat{color:var(--muted)}
+  .h-task-row.checked .h-task-steps{text-decoration:line-through;opacity:.38}
 
   @media print {
-    body { background: #fff; color: #111; padding: 10px; }
-    .board-head { border-color: #ccc; }
-    .board-head .title, .board-head .date, .sync-label { color: #111; }
-    .board-head button, .sync-dot { display: none; }
-    .job { background: #fff; border-color: #bbb; break-inside: avoid; }
-    .job-head { border-color: #ddd; }
-    .job-head .cust, .job-head .unit, .job-head .tech { color: #111; }
-    .task { border-color: #bbb; }
-    .task.complete { opacity: .55; }
-    @page { size: landscape; margin: 0.35in; }
+    #auth-gate{display:none!important}
+    body{background:white;padding:0;margin:0;color:#111}
+    header{background:white;border-bottom:1px solid #ccc;padding:6px 12px}
+    header h1{color:#111;font-size:1rem}
+    header h1 span{color:#2a7a6a}
+    .top-bar,.parse-row,.input-panel,.history-wrap{display:none!important}
+    .result-actions,.result-header{display:none}
+    .result-area{padding:0;margin:0;max-width:100%}
+    .job-card{background:white;border:.5px solid #ccc}
+    .job-header{background:#f5f5f5;padding:6px 10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
+    .job-info-item .label{font-size:.5rem;letter-spacing:.08em;color:#888}
+    .job-info-item .value{font-size:.7rem;font-family:'Bebas Neue',sans-serif;color:#111}
+    .job-body{padding:8px 10px;display:grid;grid-template-columns:repeat(2,1fr);gap:6px 10px;align-items:start}
+    .task-tile{background:white;border:.5px solid #bbb;break-inside:avoid}
+    .task-tile .t-cat{background:#f5f5f5;color:#2a7a6a;border-bottom:.5px solid #ddd;font-size:.55rem;padding:4px 8px}
+    .task-tile .t-steps{color:#333;font-size:.6rem;padding:5px 8px}
+    @page{size:landscape;margin:.3in}
   }
-  @media (max-width: 720px) {
-    .job-head { flex-wrap: wrap; }
-    .job-head .num { min-width: auto; }
-    .job-head .right { margin-left: 0; width: 100%; }
-    .tasks { grid-template-columns: 1fr; }
-  }
+  /* move-mode board manager */
+  .slot-card{background:var(--card);border:1px solid var(--border-l);border-radius:3px;padding:10px 10px 8px;transition:border-color .15s,background .15s}
+  .slot-card .slot-num{font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.1em;color:var(--orange);display:block;margin-bottom:2px}
+  .slot-card .slot-name{font-size:.6rem;color:var(--muted);font-family:'DM Mono',monospace;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px}
+  .slot-card .slot-actions{display:flex;gap:5px}
+  .btn-move{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.06em;padding:3px 7px;border:1px solid var(--border-l);border-radius:2px;background:transparent;color:var(--light);cursor:pointer}
+  .btn-move:hover{border-color:var(--teal);color:var(--teal)}
+  .btn-clr{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.06em;padding:3px 7px;border:1px solid var(--border-l);border-radius:2px;background:transparent;color:var(--muted);cursor:pointer}
+  .btn-clr:hover{border-color:#e07060;color:#e07060}
+  .slot-card.move-source{border-color:var(--teal);background:#1e3230}
+  .slot-card.move-target{border-color:var(--orange);cursor:pointer}
+  .slot-card.move-target:hover{background:#332416}
+  .slot-card.move-inactive{opacity:.35}
+  .move-hint{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--teal);letter-spacing:.04em;margin-bottom:12px;min-height:1em}
+  .slot-card.empty-slot{opacity:.4;pointer-events:none}
+  .slot-card.empty-slot.move-target{opacity:1;pointer-events:auto}
 </style>
 </head>
 <body>
 
-<div class="board-head">
-  <div class="title">TCG <span>//</span> Daily Jobs</div>
-  <div class="right">
-    <div class="date" id="date-display"></div>
-    <div class="sync"><span class="sync-dot" id="sync-dot"></span><span class="sync-label" id="sync-label">connecting…</span></div>
-    <button onclick="window.print()">Print</button>
+<div id="auth-gate">
+  <div class="auth-box">
+    <h1>TCG <span>Invoice Parser</span></h1>
+    <p>Sign in with your TCG Google account</p>
+    <button class="btn-google" id="btn-google-signin">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
+      Sign in with Google
+    </button>
+    <div class="auth-error" id="auth-error">Access denied. Use your TCG email address.</div>
   </div>
 </div>
 
-<div class="board" id="board"></div>
+<div id="app">
+  <header>
+    <h1>TCG <span>Invoice Parser</span></h1>
+    <div class="sub">Paste a QuickBooks invoice → push to job board</div>
+    <div class="top-bar">
+      <span class="sync-dot" id="sync-dot"></span>
+      <span class="sync-label" id="sync-label">connecting...</span>
+      <span class="user-info" id="user-info"></span>
+      <button class="btn-signout" id="btn-signout">Sign Out</button>
+    </div>
+  </header>
 
-<!-- ============================================================
-     DATA CONTRACT (shared with the invoice parser)
-     ------------------------------------------------------------
-     jobs/slot{1-4} = {
-       customer: string,
-       vehicle:  string,
-       tech:     string,
-       status:   string   (optional: "In Shop" | "Awaiting Parts" |
-                            "Scheduled" | etc. — drives the badge color)
-       tasks: [
-         { category: string, steps: string, dynamic?: boolean }
-       ]
-     }
+  <div class="page-wrap">
+    <div class="input-panel">
+      <h2>Job Info</h2>
+      <div class="fields-row">
+        <div class="field-group"><label>Customer Name</label><input id="f-customer" placeholder="e.g. John Smith" autocomplete="off"></div>
+        <div class="field-group"><label>Vehicle</label><input id="f-vehicle" placeholder="e.g. 2022 Ford F-250" autocomplete="off"></div>
+        <div class="field-group"><label>Tech</label><input id="f-tech" placeholder="Initials" autocomplete="off"></div>
+      </div>
+      <h2 style="margin-bottom:12px;">Invoice Line Items</h2>
+      <textarea id="invoice-input" placeholder="Paste your QuickBooks invoice line items here...
 
-     done/slot{1-4} = { "<taskIndex>": true }   // task marked complete
+Example:
+Victron SmartSolar MPPT 100/30
+Battle Born 100Ah LiFePO4 Battery x2
+Renogy 200W Solar Panel x2
+Victron BMV-712 Battery Monitor
+Blue Sea 5029 ST Blade Fuse Block
+2/0 AWG Welding Cable - Red 6ft
+Install labor - solar system
+Roof penetration glands x4
+Wire loom and conduit
+Shore power inlet install"></textarea>
+      <div class="parse-row">
+        <button class="btn-primary" id="btn-parse" onclick="parseInvoice()">Generate Job Card</button>
+        <button class="btn-secondary" onclick="clearAll()">Clear</button>
+        <button class="btn-green" id="btn-push" onclick="openSlotPicker()" disabled>Send to Job Board →</button>
+        <button class="btn-secondary" onclick="openBoardManager()">Manage Board</button>
+        <span class="status" id="status"></span>
+      </div>
+    </div>
+  </div>
 
-     Backward compatible: if a slot has the OLD shape
-     (categories -> subs -> items) instead of `tasks`, the board
-     flattens each category into a single comma-joined task line.
-     ============================================================ -->
+  <div class="result-area">
+    <div id="result-empty" class="empty-state">Generated job card will appear here</div>
+    <div id="result-wrap" style="display:none;">
+      <div class="result-header">
+        <h2>Generated Job Card — matches the board</h2>
+        <div class="result-actions"><button class="btn-secondary" onclick="window.print()">Print</button></div>
+      </div>
+      <div class="job-card">
+        <div class="job-header" id="result-header-fields"></div>
+        <div class="job-body" id="result-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="history-wrap">
+    <div class="history-hdr">
+      <h2>Job Card History</h2>
+      <span class="history-count" id="history-count"></span>
+    </div>
+    <div id="history-list">
+      <div class="history-empty" id="history-empty">No history yet — pushed jobs will appear here</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="slot-modal">
+  <div class="modal">
+    <h3 id="modal-title">Send to Job Slot</h3>
+    <div class="move-hint" id="move-hint"></div>
+    <div class="slot-grid" id="slot-grid"></div>
+    <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
 
 <script type="module">
-import { initializeApp }                           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, set, remove }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { initializeApp }                                 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, remove, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged }
+                                                         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey:            "AIzaSyCJpAsk_zRsssznO0_c2QxSpB7BJykULKY",
@@ -240,165 +268,557 @@ const firebaseConfig = {
   appId:             "1:275203550533:web:bf497f86eee41a7048622c"
 };
 
-const app = initializeApp(firebaseConfig);
-const db  = getDatabase(app);
-const doneListeners = {};
+const ALLOWED_EMAILS = [
+  "justin@truckcampergarage.com","ryan@truckcampergarage.com",
+  "john@truckcampergarage.com","zach@truckcampergarage.com",
+  "sacha@truckcampergarage.com","sam@truckcampergarage.com"
+];
+
+const SHEET_ID = '1bd47vmGBghGWA8PAQUkPQQiU7c4qroazyaMKgBxErP4';
+
+const app      = initializeApp(firebaseConfig);
+const db       = getDatabase(app);
+const auth     = getAuth(app);
+const provider = new GoogleAuthProvider();
+provider.addScope('https://www.googleapis.com/auth/spreadsheets');
+
+let googleAccessToken = sessionStorage.getItem('tcg_gat') || null;
+
+onAuthStateChanged(auth, (user) => {
+  if (user && ALLOWED_EMAILS.includes(user.email)) {
+    document.getElementById('auth-gate').style.display = 'none';
+    document.getElementById('app').style.display       = 'block';
+    document.getElementById('user-info').textContent   = user.email;
+    document.getElementById('auth-error').style.display = 'none';
+    startListening();
+  } else if (user) {
+    fbSignOut(auth);
+    document.getElementById('auth-error').style.display = 'block';
+    document.getElementById('auth-gate').style.display  = 'flex';
+    document.getElementById('app').style.display        = 'none';
+  } else {
+    document.getElementById('auth-gate').style.display = 'flex';
+    document.getElementById('app').style.display       = 'none';
+  }
+});
+
+document.getElementById('btn-google-signin').addEventListener('click', async () => {
+  try {
+    const result     = await signInWithPopup(auth, provider);
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    if (credential && credential.accessToken) {
+      googleAccessToken = credential.accessToken;
+      sessionStorage.setItem('tcg_gat', googleAccessToken);
+    }
+  } catch(e) { console.error(e); }
+});
+
+document.getElementById('btn-signout').addEventListener('click', () => {
+  sessionStorage.removeItem('tcg_gat');
+  googleAccessToken = null;
+  fbSignOut(auth);
+});
+
+const currentSlots = {};
+
+function startListening() {
+  onValue(ref(db, 'jobs'), (snapshot) => {
+    const data = snapshot.val() || {};
+    Object.assign(currentSlots, data);
+    for (let i = 1; i <= 4; i++) { if (!data[`slot${i}`]) delete currentSlots[`slot${i}`]; }
+    setSyncStatus(true);
+  }, () => setSyncStatus(false));
+
+  onValue(ref(db, 'history'), (snapshot) => {
+    if (window._renderHistory) window._renderHistory(snapshot.val() || {});
+  });
+}
 
 function setSyncStatus(ok) {
   document.getElementById('sync-dot').className     = 'sync-dot ' + (ok ? 'live' : 'error');
-  document.getElementById('sync-label').textContent = ok ? 'live' : 'disconnected';
+  document.getElementById('sync-label').textContent = ok ? 'connected to job board' : 'disconnected';
 }
 
-onValue(ref(db, 'jobs'), (snapshot) => {
-  const data = snapshot.val() || {};
-  setSyncStatus(true);
-  for (let i = 1; i <= 4; i++) {
-    if (data[`slot${i}`]) window.applyJobToSlot(i, data[`slot${i}`]);
-    else                  window.clearSlotDisplay(i);
-  }
-}, () => setSyncStatus(false));
+// Clear task-completion (done/) + legacy item-checks (checked/) for a slot.
+// NON-FATAL: a failure here (e.g. missing Firebase rules for "done") must
+// never block the push, delete, or history write — worst case is stale
+// checkmarks, which we log to the console.
+async function clearSlotState(slotNum) {
+  try { await remove(ref(db, `done/slot${slotNum}`)); }
+  catch(e) { console.warn(`done/slot${slotNum} clear failed (add a "done" rule in Firebase):`, e.message); }
+  try { await remove(ref(db, `checked/slot${slotNum}`)); }
+  catch(e) { console.warn(`checked/slot${slotNum} clear failed:`, e.message); }
+}
 
-/* live per-slot completion state */
-window.setupDoneListener = function(slotNum) {
-  if (doneListeners[slotNum]) doneListeners[slotNum]();
-  doneListeners[slotNum] = onValue(ref(db, `done/slot${slotNum}`), (snap) => {
-    const data = snap.val() || {};
-    const container = document.getElementById(`tasks-${slotNum}`);
-    if (!container) return;
-    container.querySelectorAll('.task[data-task-index]').forEach(t => {
-      t.classList.toggle('complete', !!data[t.dataset.taskIndex]);
-    });
-  });
+// Push new job. ORDER MATTERS: history is written immediately after the slot,
+// BEFORE any state-clearing, so the permanent record can never be skipped.
+window.pushJobToSlot = async function(slotNum, jobData) {
+  await set(ref(db, `jobs/slot${slotNum}`), jobData);
+  const histRef = push(ref(db, 'history'));
+  await set(histRef, jobData);
+  appendToSheet(jobData);
+  await clearSlotState(slotNum);
 };
 
-window.setDoneInDB = function(slotNum, taskIndex, done) {
-  const path = `done/slot${slotNum}/${taskIndex}`;
-  if (done) set(ref(db, path), true);
-  else      remove(ref(db, path));
+// Re-push from history: board slot only, no new history entry
+window.pushToSlotOnly = async function(slotNum, jobData) {
+  await set(ref(db, `jobs/slot${slotNum}`), jobData);
+  await clearSlotState(slotNum);
 };
+
+// Clear slot via Manage Board
+window.clearJobSlot = async function(slotNum) {
+  await remove(ref(db, `jobs/slot${slotNum}`));
+  await clearSlotState(slotNum);
+};
+
+// Move slot: src → dst, clear src (dst was empty). Completion resets.
+window._moveSlot = async function(srcNum, srcData, dstNum) {
+  await set(ref(db, `jobs/slot${dstNum}`), srcData);
+  await remove(ref(db, `jobs/slot${srcNum}`));
+  await clearSlotState(dstNum);
+  await clearSlotState(srcNum);
+};
+
+// Swap two occupied slots. Completion resets on both.
+window._swapSlots = async function(aNum, aData, bNum, bData) {
+  await set(ref(db, `jobs/slot${aNum}`), bData);
+  await set(ref(db, `jobs/slot${bNum}`), aData);
+  await clearSlotState(aNum);
+  await clearSlotState(bNum);
+};
+
+// History checked state (per-task in v3: keys are "t-0", "t-1", ...)
+window.setHistoryChecked = function(pushId, itemKey, checked) {
+  if (checked) { set(ref(db, `historyChecked/${pushId}/${itemKey}`), true); }
+  else         { remove(ref(db, `historyChecked/${pushId}/${itemKey}`)); }
+};
+
+const hCheckedListeners = {};
+window.listenHistoryChecked = function(pushId, callback) {
+  if (hCheckedListeners[pushId]) return;
+  hCheckedListeners[pushId] = onValue(ref(db, `historyChecked/${pushId}`), (snap) => callback(snap.val() || {}));
+};
+
+// Google Sheets mirror
+async function appendToSheet(jobData) {
+  if (!googleAccessToken) { console.warn('No Google token — Sheets write skipped. Re-sign in to enable.'); return; }
+  const date = new Date(jobData.timestamp || Date.now()).toLocaleString('en-US',
+    { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' });
+  const cats = (jobData.tasks && jobData.tasks.length)
+    ? jobData.tasks.map(t => t.category).join(', ')
+    : (jobData.categories || []).map(c => c.cat).join(', ');
+  const values = [[date, jobData.customer||'', jobData.vehicle||'', jobData.tech||'', cats]];
+  try {
+    const res = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1!A:E:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+      { method:'POST', headers:{ 'Authorization':`Bearer ${googleAccessToken}`, 'Content-Type':'application/json' }, body:JSON.stringify({ values }) }
+    );
+    if (!res.ok) console.warn('Sheets write failed:', await res.text());
+  } catch(e) { console.warn('Sheets write error:', e); }
+}
+
+window._currentSlots = currentSlots;
 </script>
 
 <script>
-document.getElementById('date-display').textContent =
-  new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+let lastParsed = null;
 
-function statusClass(status) {
-  const s = (status || '').toLowerCase();
-  if (s.includes('shop'))                       return 'shop';
-  if (s.includes('part'))                       return 'parts';
-  if (s.includes('schedul'))                    return 'sched';
-  if (!s)                                        return '';
-  return 'neutral';
+async function parseInvoice() {
+  const invoiceText = document.getElementById('invoice-input').value.trim();
+  if (!invoiceText) { setStatus('Paste some invoice line items first.', 'error'); return; }
+  const customer = document.getElementById('f-customer').value.trim() || 'N/A';
+  const vehicle  = document.getElementById('f-vehicle').value.trim()  || 'N/A';
+  const tech     = document.getElementById('f-tech').value.trim()     || 'N/A';
+  setStatus('<span class="spinner"></span>Parsing invoice...', 'loading');
+  document.getElementById('btn-parse').disabled = true;
+  document.getElementById('btn-push').disabled  = true;
+
+  const prompt = `You are a job card generator for Truck Camper Garage (TCG), a truck camper install, service, and custom fab shop in San Diego. From QuickBooks invoice line items, generate the shop's job board tasks: one entry per DISTINCT job type on the invoice, each with a single comma-separated line of key milestone actions. This one list is shown on the shop TV, the printed job card, and the history record — it is the only output.
+
+Each entry:
+- "category": short job name (e.g. "Solar Panels", "Truck Side Charging", "Airbags")
+- "steps": the KEY actions as ONE single line, comma-separated, lowercase, no trailing period. Milestones a tech scans at a glance — NOT full procedures. Aim for 2–6 items (airbags is the one long exception below).
+
+Use these EXACT step lines when the matching work is on the invoice (TCG standard wording):
+- Truck Side Charging → "wire alternator, route to rear, install Anderson connector"
+- Camper Side Charging → "install Anderson connector, install DC to DC, wire to battery"
+- Solar Panels → "install z clips on panel, install panel on roof, seal penetrations, install solar gland, drop wires into camper"
+- Solar Charge Controller → "tie solar wires into charge controller, wire charge controller to battery"
+- Battery Swap → "remove old battery, reinstall new battery"
+- Airbags → "lift vehicle, remove rear wheels, lower axle, install brackets on axle, install brackets on frame, mount airbags to two brackets, raise axle, mount airbags to upper brackets, tie in airlines"
+- Airbag Air Compressor → "wire from battery, mount compressor, run airlines"
+- Timbrens / Sumo Springs → use "remove factory bump stops, install Timbrens" OR "remove factory bump stops, install Sumo Springs" depending on which product is on the invoice. Use the exact product named — never guess. If both appear, list both installs.
+
+For job types NOT in the list above, use this REFERENCE GUIDE to know the key milestones, then compress them into one terse comma line in the same lowercase style:
+
+── CAMPER INSTALL / BED PREP ── (camper unit, bed mat, Scout/Lance/FWC delivery): lay bed mat, load camper, confirm alignment, secure anchor points
+── TORKLIFT TIE-DOWNS ── (TorkLift, Talon, ApexAnchors): confirm fit, bolt receivers to frame, verify all 4 points
+── TURNBUCKLES ── (FastGun, SpringLoad XL): hang from anchor points, tension to 300 lbs, install locks
+── STABLELOAD ── (StableLoad): confirm fitment, install per spec, test load response
+── 7-WAY RV CABLE & IN-BED PLUG ── (7-way, in-bed plug, brake light wiring): route cable in bed, install in-bed plug, connect truck wiring, test circuits
+── LITHIUM BATTERY ── (Dakota Lithium, Expion, Battle Born, LiFePO4): mount battery, fuse within 18in, wire to busbar, set LiFePO4 profile
+── ROOF ENTRY GLAND ── (roof gland, cable entry): drill to spec, install gland with butyl, route cable with drip loop
+── INVERTER ── (pure sine, Rich Solar Nova, Victron, AIMS): mount near battery, fuse DC input, wire AC output, test under load
+── TRANSFER SWITCH / SHORE POWER ──: install transfer switch, wire inputs and output, test all modes
+── FUSE BLOCK / DISTRIBUTION ── (Blue Sea, busbar): mount and label, fuse feed wire, test circuits
+── BATTERY MONITOR / SHUNT ── (Victron BMV, SmartShunt): install shunt on negative, wire display, configure settings
+── WIRING / HARDWARE (generic) ──: size and crimp wire, route in loom, label circuits
+── STARLINK MINI ──: check obstruction, mount dish, route cable, connect 12V and verify
+── BACKUP / DASH CAMERA ── (WolfBox): mount cameras, route cables, connect power, test views
+── ROOF RACK / CROSSBARS ── (Yakima, Rhino-Rack, Thule): confirm fitment, mount and seal feet, torque to spec
+── AWNING ── (Kammock, 270): fab brackets as needed, mount awning, test operation
+── MAXXAIR / ROOF FAN ──: remove old vent, install fan with butyl, wire and test
+── DIESEL HEATER ── (Espar, RADICA): mount heater and tank, route exhaust, connect fuel and power, test heat
+── AC UNIT ── (Nomadic, Furrion, Truma): prep roof opening, install unit, run 120V, test cooling
+── TV MOUNT ──: confirm backing, mount bracket, route power, test
+── PLUMBING ── (pump, tank, faucet, water heater): install per scope, pressure test, verify flow
+── PROPANE ── (MB Sturgis, quick disconnect): install line or QD, leak test fittings, verify appliance
+── COMPOSTING TOILET ── (Cuddy, Trelino): mount toilet, install vent, test
+── CUSTOM FAB ── (aluminum frame, brackets, welding): fab per scope, test fit, seal penetrations, verify load
+── ROT REPAIR / RESEAL ── (epoxy, sealant, trim): remove damaged material, treat and seal, cure, verify water-tight
+── REPAIR (general) ── (troubleshoot, warranty, fix): diagnose root cause, repair per scope, test and confirm fixed
+
+STRICT RULES:
+- One "tasks" entry per distinct job type — do NOT make an entry per line item
+- Parts not in guide: category from product type, steps = "install [product name]" plus obvious milestones
+- Never invent work not stated in the invoice
+- TCG does NOT do suspension lifts, spring swaps, or shock replacements. If present: category "Referral", steps "refer to north county spring — outside tcg scope"
+- Retail/merch items (hats, stickers, tees, koozies): category "Retail / Accessories", steps "retail sale — [item names]"
+- Admin items (CC fees, shipping, storage, tax, discounts): OMIT entirely
+- Always end with one final entry: category "Final QC", steps "test all systems, inspect wiring, verify penetrations sealed, customer walkthrough"
+
+OUTPUT — return ONLY valid JSON, no markdown, no explanation:
+{
+  "tasks": [
+    { "category": "Solar Panels", "steps": "install z clips on panel, install panel on roof, seal penetrations, install solar gland, drop wires into camper" }
+  ]
 }
 
-/* Resolve the task list for a slot, supporting both new and old shapes */
-function resolveTasks(jobData) {
+Invoice line items:
+${invoiceText}`;
+
+  try {
+    const response = await fetch('https://tcg-proxy.justin-57c.workers.dev', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:4000, messages:[{ role:'user', content:prompt }] })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data?.error?.message || 'API error');
+    const raw    = data.content?.find(b => b.type === 'text')?.text || '';
+    const clean  = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    if (!Array.isArray(parsed.tasks) || !parsed.tasks.length) throw new Error('No tasks returned — try again');
+    lastParsed = { customer, vehicle, tech, tasks: parsed.tasks, timestamp: Date.now() };
+    renderJobCard(customer, vehicle, tech, parsed.tasks);
+    setStatus('Done — ready to send to job board.', 'done');
+    document.getElementById('btn-push').disabled = false;
+  } catch (err) {
+    console.error(err);
+    setStatus('Error: ' + err.message, 'error');
+  }
+  document.getElementById('btn-parse').disabled = false;
+}
+
+// The job card IS the board view — same tasks, same wording, everywhere.
+function renderJobCard(customer, vehicle, tech, tasks) {
+  document.getElementById('result-header-fields').innerHTML = `
+    <div class="job-info-item"><div class="label">Customer</div><div class="value">${esc(customer)}</div></div>
+    <div class="job-info-item"><div class="label">Vehicle</div><div class="value">${esc(vehicle)}</div></div>
+    <div class="job-info-item"><div class="label">Tech</div><div class="value">${esc(tech)}</div></div>
+  `;
+  document.getElementById('result-body').innerHTML = renderTaskTiles(tasks);
+  document.getElementById('result-empty').style.display = 'none';
+  document.getElementById('result-wrap').style.display  = 'block';
+}
+
+function renderTaskTiles(tasks) {
+  return (tasks || []).map(t => `
+    <div class="task-tile">
+      <div class="t-cat">${esc(t.category || 'Task')}</div>
+      <div class="t-steps">${esc(t.steps || '')}</div>
+    </div>`).join('');
+}
+
+// Old-format history entries (categories → subs → items) get flattened to task lines
+function tasksFrom(jobData) {
   if (Array.isArray(jobData.tasks)) return jobData.tasks;
   if (Array.isArray(jobData.categories)) {
     return jobData.categories.map(c => ({
-      category: c.cat || c.category || 'Task',
-      steps: (c.subs || [])
-        .flatMap(s => s.items || [])
-        .filter(Boolean)
-        .join(', ')
+      category: c.cat || 'Task',
+      steps: (c.subs || []).flatMap(s => s.items || []).filter(Boolean).join(', ')
     }));
   }
   return [];
 }
 
-function renderBoard() {
-  const board = document.getElementById('board');
-  board.innerHTML = '';
+function openSlotPicker() {
+  if (!lastParsed) return;
+  document.getElementById('modal-title').textContent = 'Send to Job Slot';
+  buildSlotGrid((n, existing) => async () => {
+    const name = existing ? (existing.customer || 'Occupied') : null;
+    if (name && !confirm(`Job ${n} already has "${name}". Replace it?`)) return;
+    closeModal();
+    setStatus('<span class="spinner"></span>Sending to job board...', 'loading');
+    try { await window.pushJobToSlot(n, lastParsed); setStatus(`✓ Sent to Job ${n} on the board.`, 'done'); }
+    catch(e) { setStatus('Send failed: ' + e.message, 'error'); }
+  });
+  document.getElementById('slot-modal').classList.add('open');
+}
+
+function openSlotPickerForHistory(jobData) {
+  document.getElementById('modal-title').textContent = 'Send to Job Slot';
+  buildSlotGrid((n, existing) => async () => {
+    const name = existing ? (existing.customer || 'Occupied') : null;
+    if (name && !confirm(`Job ${n} already has "${name}". Replace it?`)) return;
+    closeModal();
+    setStatus('<span class="spinner"></span>Sending to job board...', 'loading');
+    try { await window.pushToSlotOnly(n, jobData); setStatus(`✓ Sent to Job ${n} on the board.`, 'done'); }
+    catch(e) { setStatus('Send failed: ' + e.message, 'error'); }
+  });
+  document.getElementById('slot-modal').classList.add('open');
+}
+
+function buildSlotGrid(handlerFactory) {
+  const slots = window._currentSlots || {};
+  const grid  = document.getElementById('slot-grid');
+  grid.innerHTML = '';
   for (let i = 1; i <= 4; i++) {
-    const job = document.createElement('div');
-    job.className = 'job';
-    job.id = `job-${i}`;
-    job.innerHTML = `
-      <div class="job-head">
-        <div class="num">Job ${i}</div>
-        <div class="who">
-          <div class="cust placeholder" id="cust-${i}">Open</div>
-          <div class="unit" id="unit-${i}"></div>
-        </div>
-        <div class="right">
-          <div class="tech" id="tech-${i}"></div>
-          <div class="status" id="status-${i}" style="display:none"></div>
-        </div>
-      </div>
-      <div class="tasks" id="tasks-${i}"></div>
-    `;
-    board.appendChild(job);
-    clearSlotDisplay(i);
+    const btn = document.createElement('button'); btn.className = 'slot-btn';
+    const existing = slots[`slot${i}`];
+    const name = existing ? (existing.customer || 'Occupied') : 'Empty';
+    if (existing) btn.classList.add('occupied');
+    btn.innerHTML = `<span class="slot-num">Job ${i}</span><span class="slot-name">${name}</span>`;
+    btn.onclick = handlerFactory(i, existing);
+    grid.appendChild(btn);
   }
 }
 
-window.applyJobToSlot = function(slotNum, jobData) {
-  const job = document.getElementById(`job-${slotNum}`);
-  if (!job) return;
+function openBoardManager() {
+  document.getElementById('modal-title').textContent = 'Manage Board';
+  document.getElementById('move-hint').textContent = '';
+  let movingFrom = null; // slot number currently selected for move
 
-  const cust = document.getElementById(`cust-${slotNum}`);
-  cust.textContent = jobData.customer || 'Open';
-  cust.classList.toggle('placeholder', !jobData.customer);
+  function renderManagerGrid() {
+    const slots = window._currentSlots || {};
+    const grid  = document.getElementById('slot-grid');
+    grid.innerHTML = '';
 
-  document.getElementById(`unit-${slotNum}`).textContent = jobData.vehicle || '';
+    for (let i = 1; i <= 4; i++) {
+      const existing = slots[`slot${i}`];
+      const name = existing ? (existing.customer || 'Occupied') : 'Empty';
+      const card = document.createElement('div');
+      const isEmpty = !existing;
 
-  const tech = document.getElementById(`tech-${slotNum}`);
-  tech.innerHTML = jobData.tech ? `Tech · <b>${jobData.tech}</b>` : '';
-
-  const badge = document.getElementById(`status-${slotNum}`);
-  if (jobData.status) {
-    badge.textContent = jobData.status;
-    badge.className = 'status label ' + statusClass(jobData.status);
-    badge.style.display = '';
-  } else {
-    badge.style.display = 'none';
+      if (movingFrom === null) {
+        // ── Default state ──
+        card.className = 'slot-card' + (isEmpty ? ' empty-slot' : '');
+        card.innerHTML = `<span class="slot-num">Job ${i}</span><span class="slot-name">${name}</span>`;
+        if (!isEmpty) {
+          const acts = document.createElement('div'); acts.className = 'slot-actions';
+          const moveBtn = document.createElement('button'); moveBtn.className = 'btn-move'; moveBtn.textContent = '↔ Move';
+          const clrBtn  = document.createElement('button'); clrBtn.className  = 'btn-clr';  clrBtn.textContent  = '✕ Clear';
+          moveBtn.onclick = (e) => {
+            e.stopPropagation();
+            movingFrom = i;
+            document.getElementById('move-hint').textContent = `Moving Job ${i} (${name}) — pick destination`;
+            renderManagerGrid();
+          };
+          clrBtn.onclick = async (e) => {
+            e.stopPropagation();
+            if (!confirm(`Clear Job ${i} (${name})?`)) return;
+            closeModal();
+            try { await window.clearJobSlot(i); setStatus(`✓ Job ${i} cleared from board.`, 'done'); }
+            catch(e2) { setStatus('Clear failed: ' + e2.message, 'error'); }
+          };
+          acts.appendChild(moveBtn); acts.appendChild(clrBtn); card.appendChild(acts);
+        }
+      } else {
+        // ── Move-select state ──
+        if (i === movingFrom) {
+          card.className = 'slot-card move-source';
+          card.innerHTML = `<span class="slot-num">Job ${i}</span><span class="slot-name">${name}</span>`;
+          const cancelBtn = document.createElement('button'); cancelBtn.className = 'btn-clr';
+          cancelBtn.textContent = 'Cancel'; cancelBtn.style.marginTop = '6px';
+          cancelBtn.onclick = (e) => {
+            e.stopPropagation(); movingFrom = null;
+            document.getElementById('move-hint').textContent = '';
+            renderManagerGrid();
+          };
+          card.appendChild(cancelBtn);
+        } else {
+          card.className = 'slot-card move-target' + (isEmpty ? '' : '');
+          card.innerHTML = `<span class="slot-num">Job ${i}</span><span class="slot-name">${isEmpty ? 'Empty — move here' : name + ' (swap)'}</span>`;
+          const src = movingFrom;
+          card.onclick = async () => {
+            closeModal();
+            try {
+              const srcData = (window._currentSlots || {})[`slot${src}`];
+              const dstData = (window._currentSlots || {})[`slot${i}`];
+              // Write destination first, then source
+              if (dstData) {
+                await window._swapSlots(src, srcData, i, dstData);
+                setStatus(`✓ Swapped Job ${src} and Job ${i}.`, 'done');
+              } else {
+                await window._moveSlot(src, srcData, i);
+                setStatus(`✓ Job ${src} moved to slot ${i}.`, 'done');
+              }
+            } catch(e) { setStatus('Move failed: ' + e.message, 'error'); }
+          };
+        }
+      }
+      grid.appendChild(card);
+    }
   }
 
-  const tasks = resolveTasks(jobData);
-  const container = document.getElementById(`tasks-${slotNum}`);
-  if (!tasks.length) {
-    container.innerHTML =
-      '<div class="empty"><div class="big">Pending job details</div>' +
-      '<div class="sub">Push a job from the invoice parser</div></div>';
-  } else {
-    container.innerHTML = tasks.map((t, idx) => `
-      <div class="task" data-task-index="${idx}">
-        <div class="cat">
-          <span>${t.category || 'Task'}</span>
-          ${t.dynamic ? '<span class="auto">AUTO</span>' : ''}
-        </div>
-        <div class="steps">${t.steps || ''}</div>
-      </div>`).join('');
-    container.querySelectorAll('.task').forEach(el => {
-      el.addEventListener('click', () => {
-        const idx = el.dataset.taskIndex;
-        const nowComplete = !el.classList.contains('complete');
-        el.classList.toggle('complete', nowComplete);
-        if (window.setDoneInDB) window.setDoneInDB(slotNum, idx, nowComplete);
-      });
+  renderManagerGrid();
+  document.getElementById('slot-modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('slot-modal').classList.remove('open'); }
+
+/* ── History ── */
+window._renderHistory = function(data) {
+  const list    = document.getElementById('history-list');
+  const empty   = document.getElementById('history-empty');
+  const countEl = document.getElementById('history-count');
+  const entries = Object.entries(data).sort((a,b) => (b[1].timestamp||0) - (a[1].timestamp||0));
+  countEl.textContent = entries.length ? `${entries.length} jobs` : '';
+  list.querySelectorAll('.h-entry').forEach(e => e.remove());
+  if (!entries.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  entries.forEach(([pushId, jobData]) => list.appendChild(buildHistoryEntry(pushId, jobData)));
+};
+
+function buildHistoryEntry(pushId, jobData) {
+  const ts = jobData.timestamp
+    ? new Date(jobData.timestamp).toLocaleDateString('en-US',
+        { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' })
+    : 'Unknown date';
+
+  const entry = document.createElement('div');
+  entry.className = 'h-entry';
+  entry.dataset.pushId = pushId;
+
+  const hdr = document.createElement('div'); hdr.className = 'h-entry-hdr';
+  const meta = document.createElement('div'); meta.className = 'h-meta';
+  meta.innerHTML = `
+    <span class="h-ts">${ts}</span>
+    <span class="h-customer">${esc(jobData.customer||'—')}</span>
+    <span class="h-vehicle">${esc(jobData.vehicle||'—')}</span>
+    <span class="h-tech">${esc(jobData.tech||'—')}</span>
+  `;
+  const acts   = document.createElement('div'); acts.className = 'h-actions';
+  const printBtn = document.createElement('button'); printBtn.className = 'btn-secondary h-push-btn';
+  printBtn.textContent = 'Print';
+  printBtn.onclick = (e) => { e.stopPropagation(); printHistoryJob(jobData); };
+  const pushBtn = document.createElement('button'); pushBtn.className = 'btn-secondary h-push-btn';
+  pushBtn.textContent = 'Send to Board →';
+  pushBtn.onclick = (e) => { e.stopPropagation(); openSlotPickerForHistory(jobData); };
+  const toggle = document.createElement('span'); toggle.className = 'h-toggle'; toggle.textContent = '▸';
+  acts.appendChild(printBtn); acts.appendChild(pushBtn); acts.appendChild(toggle);
+  hdr.appendChild(meta); hdr.appendChild(acts); entry.appendChild(hdr);
+
+  const body = document.createElement('div'); body.className = 'h-entry-body';
+  const taskList = document.createElement('div'); taskList.className = 'h-task-list';
+
+  const tasks = tasksFrom(jobData);
+  tasks.forEach((t, idx) => {
+    const itemKey = `t-${idx}`;
+    const row = document.createElement('div'); row.className = 'h-task-row'; row.dataset.itemKey = itemKey;
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'h-task-check';
+    const txt = document.createElement('div'); txt.className = 'h-task-text';
+    const cat = document.createElement('div'); cat.className = 'h-task-cat'; cat.textContent = t.category || 'Task';
+    const steps = document.createElement('div'); steps.className = 'h-task-steps'; steps.textContent = t.steps || '';
+    txt.appendChild(cat); txt.appendChild(steps);
+    cb.addEventListener('change', () => {
+      row.classList.toggle('checked', cb.checked);
+      if (window.setHistoryChecked) window.setHistoryChecked(pushId, itemKey, cb.checked);
     });
-  }
+    row.appendChild(cb); row.appendChild(txt); taskList.appendChild(row);
+  });
 
-  job.classList.add('just-updated');
-  setTimeout(() => job.classList.remove('just-updated'), 2000);
-  if (window.setupDoneListener) window.setupDoneListener(slotNum);
-};
+  body.appendChild(taskList); entry.appendChild(body);
 
-window.clearSlotDisplay = function(slotNum) {
-  const cust = document.getElementById(`cust-${slotNum}`);
-  if (cust) { cust.textContent = 'Open'; cust.classList.add('placeholder'); }
-  const unit = document.getElementById(`unit-${slotNum}`); if (unit) unit.textContent = '';
-  const tech = document.getElementById(`tech-${slotNum}`); if (tech) tech.innerHTML = '';
-  const badge = document.getElementById(`status-${slotNum}`); if (badge) badge.style.display = 'none';
-  const container = document.getElementById(`tasks-${slotNum}`);
-  if (container) {
-    container.innerHTML =
-      '<div class="empty"><div class="big">Open bay</div>' +
-      '<div class="sub">Push a job from the invoice parser</div></div>';
-  }
-};
+  let listenerSetup = false;
+  hdr.addEventListener('click', () => {
+    const expanded = entry.classList.toggle('expanded');
+    toggle.textContent = expanded ? '▾' : '▸';
+    if (expanded && !listenerSetup) {
+      listenerSetup = true;
+      if (window.listenHistoryChecked) {
+        window.listenHistoryChecked(pushId, (checkedData) => {
+          body.querySelectorAll('.h-task-row[data-item-key]').forEach(row => {
+            const key = row.dataset.itemKey;
+            const cb  = row.querySelector('.h-task-check');
+            const isChecked = !!checkedData[key];
+            if (cb) cb.checked = isChecked;
+            row.classList.toggle('checked', isChecked);
+          });
+        });
+      }
+    }
+  });
+  return entry;
+}
 
-renderBoard();
+function printHistoryJob(jobData) {
+  const ts = jobData.timestamp
+    ? new Date(jobData.timestamp).toLocaleDateString('en-US',
+        { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' })
+    : '';
+  const tasks = tasksFrom(jobData);
+  const tilesHtml = tasks.map(t => `
+    <div class="task-tile">
+      <div class="t-cat">${esc(t.category || 'Task')}</div>
+      <div class="t-steps">${esc(t.steps || '')}</div>
+    </div>`).join('');
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html>
+<html><head>
+<title>TCG Job Card — ${esc(jobData.customer||'')}</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;color:#111;background:white;padding:.25in}
+  .ts{font-family:'DM Mono',monospace;font-size:.52rem;color:#888;text-align:right;margin-bottom:5px}
+  .job-header{background:#f5f5f5;border:.5px solid #ccc;border-bottom:none;padding:7px 12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .label{font-family:'DM Mono',monospace;font-size:.5rem;text-transform:uppercase;letter-spacing:.08em;color:#888;display:block}
+  .value{font-family:'Bebas Neue',sans-serif;font-size:.88rem;letter-spacing:.06em;display:block}
+  .job-body{border:.5px solid #ccc;padding:10px 12px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px;align-items:start}
+  .task-tile{border:.5px solid #bbb;border-radius:2px;overflow:hidden;break-inside:avoid}
+  .t-cat{background:#f5f5f5;color:#2a7a6a;font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-bottom:.5px solid #ddd}
+  .t-steps{padding:6px 8px;font-size:.62rem;color:#333;line-height:1.5}
+  @page{size:landscape;margin:.3in}
+</style>
+</head><body>
+<div class="ts">${ts}</div>
+<div class="job-header">
+  <div><span class="label">Customer</span><span class="value">${esc(jobData.customer||'—')}</span></div>
+  <div><span class="label">Vehicle</span><span class="value">${esc(jobData.vehicle||'—')}</span></div>
+  <div><span class="label">Tech</span><span class="value">${esc(jobData.tech||'—')}</span></div>
+</div>
+<div class="job-body">${tilesHtml}</div>
+<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();};}<\/script>
+</body></html>`);
+  win.document.close();
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function setStatus(msg, type) {
+  const el = document.getElementById('status'); el.innerHTML = msg; el.className = 'status ' + (type||'');
+}
+function clearAll() {
+  document.getElementById('invoice-input').value = '';
+  ['f-customer','f-vehicle','f-tech'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('result-empty').style.display = 'block';
+  document.getElementById('result-wrap').style.display  = 'none';
+  document.getElementById('btn-push').disabled = true;
+  lastParsed = null; setStatus('','');
+}
 </script>
 </body>
 </html>
