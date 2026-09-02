@@ -65,26 +65,20 @@
   .result-header h2{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.12em;color:var(--muted)}
   .result-actions{display:flex;gap:8px}
 
-  /* ── Board preview (what the TV shows) ── */
-  .board-preview{margin-bottom:18px;border:1px solid var(--border);border-radius:3px;background:var(--card);overflow:hidden}
-  .board-preview .bp-hdr{background:#222;border-bottom:1px solid var(--border);padding:9px 14px;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);display:flex;align-items:center;gap:8px}
-  .bp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;padding:12px}
-  .bp-task{border:1px solid var(--border-l);border-radius:3px;overflow:hidden;background:var(--surface)}
-  .bp-task .bp-cat{background:#1f1f1f;color:var(--text);font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;padding:6px 9px;border-bottom:1px solid var(--border)}
-  .bp-task .bp-steps{padding:7px 9px;font-size:.66rem;color:var(--item);line-height:1.45}
-
   .job-card{background:var(--card);border:1px solid var(--border);border-radius:3px;overflow:hidden}
-  .job-header{background:#222;border-bottom:1px solid var(--border);padding:14px 16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .job-header{background:#222;border-bottom:1px solid var(--border);padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px}
+  .t-hrs{float:right;font-size:.55rem;color:var(--muted);letter-spacing:.04em;text-transform:none}
+  .print-worksheet{display:none}
   .job-info-item{display:flex;flex-direction:column;gap:3px}
   .job-info-item .label{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
   .job-info-item .value{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.06em;color:var(--text)}
-  .job-body{padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
-  .cat-title{font-family:'DM Mono',monospace;font-size:.62rem;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:8px}
-  .subcategory{margin-bottom:8px;padding-left:2px}
-  .sub-title{font-size:.68rem;font-weight:600;color:var(--subcat);margin-bottom:4px}
-  .items{list-style:none;padding-left:8px}
-  .items li{display:flex;align-items:flex-start;gap:5px;font-size:.67rem;color:var(--item);line-height:1.6;padding:1px 0}
-  .items li::before{content:'–';color:var(--orange);flex-shrink:0}
+
+  /* Job card body = board view tiles (single source of truth) */
+  .job-body{padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+  .task-tile{border:1px solid var(--border-l);border-radius:3px;overflow:hidden;background:var(--surface)}
+  .task-tile .t-cat{background:#1f1f1f;color:var(--teal);font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:7px 10px;border-bottom:1px solid var(--border)}
+  .task-tile .t-steps{padding:8px 10px;font-size:.68rem;color:var(--item);line-height:1.5}
+
   .spinner{display:inline-block;width:11px;height:11px;border:2px solid var(--border-l);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:4px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .empty-state{text-align:center;padding:48px 20px;color:var(--muted);font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.06em;border:1px dashed var(--border-l);border-radius:3px}
@@ -122,17 +116,14 @@
   .h-entry.expanded .h-toggle{color:var(--teal)}
   .h-entry-body{display:none;border-top:1px solid var(--border);padding:14px}
   .h-entry.expanded .h-entry-body{display:block}
-  .h-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
-  .h-cat-title{font-family:'DM Mono',monospace;font-size:.58rem;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);border-bottom:1px solid var(--border);padding-bottom:3px;margin-bottom:6px}
-  .h-subcategory{margin-bottom:6px}
-  .h-sub-title{font-size:.65rem;font-weight:600;color:var(--subcat);margin-bottom:3px}
-  .h-items{list-style:none;padding-left:6px}
-  .h-item-row{display:flex;align-items:center;gap:4px;padding:1px 0}
-  .h-item-check{width:12px;height:12px;flex-shrink:0;cursor:pointer;accent-color:var(--teal)}
-  .h-item-bullet{color:var(--orange);font-size:.6rem;flex-shrink:0;transition:opacity .15s}
-  .h-item-bullet.faded{opacity:.2}
-  .h-item-text{font-size:.64rem;color:var(--item);line-height:1.5}
-  .h-item-text.checked{text-decoration:line-through;opacity:.38}
+  .h-task-list{display:flex;flex-direction:column;gap:8px}
+  .h-task-row{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:3px;background:var(--card)}
+  .h-task-check{width:13px;height:13px;flex-shrink:0;cursor:pointer;accent-color:var(--teal);margin-top:2px}
+  .h-task-text{flex:1;min-width:0}
+  .h-task-cat{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:2px}
+  .h-task-steps{font-size:.66rem;color:var(--item);line-height:1.5}
+  .h-task-row.checked .h-task-cat{color:var(--muted)}
+  .h-task-row.checked .h-task-steps{text-decoration:line-through;opacity:.38}
 
   @media print {
     #auth-gate{display:none!important}
@@ -140,21 +131,31 @@
     header{background:white;border-bottom:1px solid #ccc;padding:6px 12px}
     header h1{color:#111;font-size:1rem}
     header h1 span{color:#2a7a6a}
-    .top-bar,.parse-row,.input-panel,.history-wrap,.board-preview{display:none!important}
+    .top-bar,.parse-row,.input-panel,.history-wrap{display:none!important}
     .result-actions,.result-header{display:none}
     .result-area{padding:0;margin:0;max-width:100%}
     .job-card{background:white;border:.5px solid #ccc}
-    .job-header{background:#f5f5f5;padding:6px 10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
+    .job-header{background:#f5f5f5;padding:6px 10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:4px}
     .job-info-item .label{font-size:.5rem;letter-spacing:.08em;color:#888}
     .job-info-item .value{font-size:.7rem;font-family:'Bebas Neue',sans-serif;color:#111}
-    .job-body{padding:8px 10px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px 10px;align-items:start}
-    .category{break-inside:avoid}
-    .cat-title{font-size:.52rem;color:#2a7a6a;border-bottom-color:#ddd;padding-bottom:2px;margin-bottom:4px;letter-spacing:.08em}
-    .subcategory{margin-bottom:4px}
-    .sub-title{font-size:.58rem;color:#444;margin-bottom:2px}
-    .items{padding-left:6px}
-    .items li{font-size:.55rem;line-height:1.4;padding:0;color:#333;gap:3px}
-    .items li::before{color:#c8763a}
+    .job-body{padding:8px 10px;display:grid;grid-template-columns:repeat(2,1fr);gap:6px 10px;align-items:start}
+    .task-tile{background:white;border:.5px solid #bbb;break-inside:avoid}
+    .task-tile .t-cat{background:#f5f5f5;color:#2a7a6a;border-bottom:.5px solid #ddd;font-size:.55rem;padding:4px 8px}
+    .task-tile .t-hrs{float:right;color:#555;font-size:.5rem}
+    .task-tile .t-steps{color:#333;font-size:.6rem;padding:5px 8px}
+    .print-worksheet{display:block;margin-top:10px;break-inside:avoid}
+    .ws-times{display:flex;gap:18px;align-items:flex-end;border:.5px solid #bbb;border-radius:2px;padding:8px 10px;margin-bottom:8px}
+    .ws-field{display:flex;align-items:flex-end;gap:6px}
+    .ws-label{font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;color:#555}
+    .ws-line{display:inline-block;width:90px;border-bottom:.5px solid #333;height:12px}
+    .ws-check{margin-left:auto;display:flex;align-items:center;gap:6px}
+    .ws-box{display:inline-block;width:11px;height:11px;border:1px solid #333;border-radius:1px}
+    .ws-bottom{display:grid;grid-template-columns:1fr 220px;gap:16px;align-items:end}
+    .ws-notes .ws-label{display:block;margin-bottom:4px}
+    .ws-nline{border-bottom:.5px solid #999;height:16px}
+    .ws-sign{display:flex;flex-direction:column;gap:12px}
+    .ws-sig{display:flex;flex-direction:column;gap:2px}
+    .ws-sigline{display:block;border-bottom:.5px solid #333;height:16px;width:100%}
     @page{size:landscape;margin:.3in}
   }
   /* move-mode board manager */
@@ -237,20 +238,30 @@ Shore power inlet install"></textarea>
     <div id="result-empty" class="empty-state">Generated job card will appear here</div>
     <div id="result-wrap" style="display:none;">
       <div class="result-header">
-        <h2>Generated Job Card</h2>
+        <h2>Generated Job Card — matches the board</h2>
         <div class="result-actions"><button class="btn-secondary" onclick="window.print()">Print</button></div>
       </div>
-
-      <!-- Board view: the condensed lines that go to the TV -->
-      <div class="board-preview" id="board-preview" style="display:none;">
-        <div class="bp-hdr">Board view — what techs see on the TV</div>
-        <div class="bp-grid" id="bp-grid"></div>
-      </div>
-
-      <!-- Full detail: kept for history + print -->
       <div class="job-card">
         <div class="job-header" id="result-header-fields"></div>
         <div class="job-body" id="result-body"></div>
+      </div>
+      <div class="print-worksheet">
+        <div class="ws-times">
+          <div class="ws-field"><span class="ws-label">Start time</span><span class="ws-line"></span></div>
+          <div class="ws-field"><span class="ws-label">End time</span><span class="ws-line"></span></div>
+          <div class="ws-field"><span class="ws-label">Actual time to complete</span><span class="ws-line"></span></div>
+          <div class="ws-check"><span class="ws-box"></span><span class="ws-label">Pictures sent</span></div>
+        </div>
+        <div class="ws-bottom">
+          <div class="ws-notes">
+            <div class="ws-label">Notes — delays, extra work, issues</div>
+            <div class="ws-nline"></div><div class="ws-nline"></div><div class="ws-nline"></div><div class="ws-nline"></div>
+          </div>
+          <div class="ws-sign">
+            <div class="ws-sig"><span class="ws-sigline"></span><span class="ws-label">Tech signature</span></div>
+            <div class="ws-sig"><span class="ws-sigline"></span><span class="ws-label">Date completed</span></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -362,19 +373,25 @@ function setSyncStatus(ok) {
   document.getElementById('sync-label').textContent = ok ? 'connected to job board' : 'disconnected';
 }
 
-// Clear both the new task-level (done/) and legacy item-level (checked/) state for a slot
+// Clear task-completion (done/) + legacy item-checks (checked/) for a slot.
+// NON-FATAL: a failure here (e.g. missing Firebase rules for "done") must
+// never block the push, delete, or history write — worst case is stale
+// checkmarks, which we log to the console.
 async function clearSlotState(slotNum) {
-  await remove(ref(db, `done/slot${slotNum}`));
-  await remove(ref(db, `checked/slot${slotNum}`));
+  try { await remove(ref(db, `done/slot${slotNum}`)); }
+  catch(e) { console.warn(`done/slot${slotNum} clear failed (add a "done" rule in Firebase):`, e.message); }
+  try { await remove(ref(db, `checked/slot${slotNum}`)); }
+  catch(e) { console.warn(`checked/slot${slotNum} clear failed:`, e.message); }
 }
 
-// Push new job: board slot + history + Sheets
+// Push new job. ORDER MATTERS: history is written immediately after the slot,
+// BEFORE any state-clearing, so the permanent record can never be skipped.
 window.pushJobToSlot = async function(slotNum, jobData) {
   await set(ref(db, `jobs/slot${slotNum}`), jobData);
-  await clearSlotState(slotNum);
   const histRef = push(ref(db, 'history'));
   await set(histRef, jobData);
   appendToSheet(jobData);
+  await clearSlotState(slotNum);
 };
 
 // Re-push from history: board slot only, no new history entry
@@ -392,8 +409,8 @@ window.clearJobSlot = async function(slotNum) {
 // Move slot: src → dst, clear src (dst was empty). Completion resets.
 window._moveSlot = async function(srcNum, srcData, dstNum) {
   await set(ref(db, `jobs/slot${dstNum}`), srcData);
-  await clearSlotState(dstNum);
   await remove(ref(db, `jobs/slot${srcNum}`));
+  await clearSlotState(dstNum);
   await clearSlotState(srcNum);
 };
 
@@ -405,7 +422,7 @@ window._swapSlots = async function(aNum, aData, bNum, bData) {
   await clearSlotState(bNum);
 };
 
-// History checked state
+// History checked state (per-task in v3: keys are "t-0", "t-1", ...)
 window.setHistoryChecked = function(pushId, itemKey, checked) {
   if (checked) { set(ref(db, `historyChecked/${pushId}/${itemKey}`), true); }
   else         { remove(ref(db, `historyChecked/${pushId}/${itemKey}`)); }
@@ -422,7 +439,6 @@ async function appendToSheet(jobData) {
   if (!googleAccessToken) { console.warn('No Google token — Sheets write skipped. Re-sign in to enable.'); return; }
   const date = new Date(jobData.timestamp || Date.now()).toLocaleString('en-US',
     { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' });
-  // Prefer the condensed board task names; fall back to detailed category names
   const cats = (jobData.tasks && jobData.tasks.length)
     ? jobData.tasks.map(t => t.category).join(', ')
     : (jobData.categories || []).map(c => c.cat).join(', ');
@@ -452,235 +468,12 @@ async function parseInvoice() {
   document.getElementById('btn-parse').disabled = true;
   document.getElementById('btn-push').disabled  = true;
 
-  const prompt = `You are a job card generator for Truck Camper Garage (TCG), a truck camper install, service, and custom fab shop in San Diego. Generate a concise job task card from QuickBooks invoice line items.
+  const prompt = `You are a job card generator for Truck Camper Garage (TCG), a truck camper install, service, and custom fab shop in San Diego. From QuickBooks invoice line items, generate the shop's job board tasks: one entry per DISTINCT job type on the invoice, each with a single comma-separated line of key milestone actions. This one list is shown on the shop TV, the printed job card, and the history record — it is the only output.
 
-You produce TWO views from the same invoice:
-1. "tasks" — a CONDENSED board view for the shop TV. One entry per distinct job type, each a single comma-separated line of key actions.
-2. "categories" — the DETAILED view for the printed work order and history (subcategories with 3–5 checkpoint bullets each).
-
-IMPORTANT: Keep detailed tasks SHORT — 3 to 5 bullet points max per subcategory. Checkpoints only, not full procedures. Every job gets a Final QC section at the end (once only).
-
-Use the REFERENCE GUIDE to assign tasks to recognized items. For anything not in the guide, use the STRICT RULES.
-
-── CAMPER INSTALL / BED PREP ──
-(camper unit, bed mat, Scout/Lance/FWC delivery, receiving)
-- Lay rubber bed mat — trim to fit
-- Load camper, confirm alignment and fit
-- Check all anchor points before securing
-
-── TORKLIFT TIE-DOWNS ──
-(TorkLift, Talon, frame mount tie downs, ApexAnchors)
-- Confirm part number via TorkLift fit guide
-- Bolt receiver tubes to frame — front and rear
-- Insert tie-down slugs, verify all 4 points secure
-
-── TURNBUCKLES ──
-(FastGun, FastGun Apex, SpringLoad XL, turnbuckles)
-- Assemble and hang from camper anchor points
-- Tension to 300 lbs — confirm O-ring indicator at each corner
-- Install locks if included
-
-── STABLELOAD / SUMO SPRINGS ──
-(StableLoad, Sumo Springs)
-- Confirm fitment for truck make/model
-- Install per TorkLift/manufacturer spec
-- Test load response after install
-
-── AIR BAGS & COMPRESSOR ──
-(Air Lift, air bags, helper springs, WirelessONE, WirelessAIR, compressor)
-- Install air bag assemblies at rear axle per Air Lift instructions
-- Mount compressor, run air lines — no kinks
-- Wire compressor to power, pair remote/Bluetooth
-- Inflate to spec, test for leaks
-
-NOTE: TCG does NOT perform suspension lifts, spring swaps, or shock replacements. If any line item references lift kits, springs, or shocks, output it as "Refer to North County Spring — outside TCG scope" under a Referrals category.
-
-── 7-WAY RV CABLE & IN-BED PLUG ──
-(7-way, RV cable, in-bed plug, Lance 6-wire, brake light wiring, 3rd brake light)
-- Route and secure 7-way cable in bed
-- Install in-bed plug/connector — weatherproof
-- Connect to truck wiring — verify running lights and brake signal
-- Test all circuits
-
-── ALTERNATOR / DC-DC CHARGING ──
-(truck charging, DC-DC, Victron Orion, Renogy DC-DC, alternator charging, fast charging)
-- Run charge wire from engine bay to camper — fuse at source
-- Mount DC-DC charger near house battery
-- Configure for LiFePO4 or AGM as needed
-- Test: engine on → confirm charge output
-
-── LITHIUM BATTERY ──
-(Dakota Lithium, Rich Solar battery, Expion, battle born, LiFePO4, 100Ah/200Ah/320Ah)
-- Mount and secure battery — fuse within 18" of positive
-- Connect to busbar/fuse block — verify polarity
-- Set charger profile to LiFePO4
-- Confirm BMS and SOC monitor working
-
-── SOLAR PANELS ──
-(Rich Solar panel, solar panel, 200W/250W/300W)
-- Place panels — check shading and obstruction
-- Mount brackets, secure to roof — butyl tape and sealant at all penetrations
-- Run and connect MC4 wiring
-- Confirm series/parallel config, secure loom
-
-── MPPT SOLAR CONTROLLER ──
-(Victron MPPT, SmartSolar, Rich Solar MPPT, charge controller)
-- Mount in ventilated location
-- Wire battery first, then PV input — fuse PV
-- Set battery profile (LiFePO4: 14.6V absorption, 13.6V float)
-- Verify charge current in VictronConnect or app
-
-── ROOF ENTRY GLAND ──
-(roof gland, cable entry, roof penetration, cable gland)
-- Score membrane, drill to gland spec
-- Install gland with butyl tape — sealant over fasteners
-- Route cable, leave drip loop at entry point
-
-── INVERTER ──
-(inverter, pure sine, Rich Solar Nova, Victron inverter, AIMS)
-- Mount near battery — ventilated location
-- DC input cables sized and fused within 18" of battery
-- Wire AC output to outlets/panel
-- Test under load
-
-── TRANSFER SWITCH / SHORE POWER ──
-(transfer switch, shore power, auto transfer, 120V circuit)
-- Install transfer switch between shore/generator and inverter
-- Wire inputs and output — verify auto-switching
-- Test shore power, generator, and inverter modes
-
-── FUSE BLOCK / DISTRIBUTION ──
-(Blue Sea, fuse block, breaker panel, busbar, distribution)
-- Mount in accessible location — label all circuits
-- Fuse feed wire from battery
-- Test each circuit
-
-── BATTERY MONITOR / SHUNT ──
-(Victron BMV, shunt, battery monitor, SmartShunt, GX Touch)
-- Install shunt on negative bus
-- Wire monitor display
-- Configure capacity and charge settings
-
-── WIRING / HARDWARE (generic) ──
-(wire, loom, lugs, connectors, sealant, hardware, parts)
-- Size wire per load — crimp and heat-shrink all terminations
-- Route in loom — secure every 18–24"
-- Label circuits at both ends
-
-── STARLINK MINI ──
-(Starlink, Starlink Mini, satellite dish, Starlink mount, VHB, mag mount)
-- Check obstruction via Starlink app before mounting
-- Mount dish — magnet, VHB, or bolt-on
-- Route cable through existing gland or new penetration — drip loop at entry
-- Connect 12V DC power cable, verify signal
-
-── BACKUP / DASH CAMERA ──
-(backup camera, WolfBox, dashcam, rear camera, camera system, mirror camera)
-- Mount camera(s) — confirm sightlines
-- Route cables — use existing grommets where possible
-- Connect to reverse circuit or hardwire kit
-- Test all camera views on display
-
-── ROOF RACK / CROSSBARS ──
-(roof rack, Yakima, Rhino-Rack, Thule, crossbars, rack)
-- Confirm fitment for camper model
-- Mount feet — butyl tape, sealant all penetrations
-- Torque to spec, verify level and no flex under load
-
-── AWNING ──
-(awning, Kammock, 270 awning, crosswing, awning bracket)
-- Fabricate/install mounting brackets as needed
-- Mount awning to camper — torque hardware
-- Test open/close operation, verify clearance
-
-── MAXXAIR / ROOF FAN ──
-(Maxxair, roof fan, roof vent, fan install)
-- Remove old vent if applicable — clean opening
-- Install fan with butyl tape and sealant
-- Wire to 12V — test all speeds and open/close
-
-── DIESEL HEATER ──
-(diesel heater, Espar, RADICA, heater install, furnace)
-- Mount heater and fuel tank — route exhaust to exterior
-- Connect fuel line, power, and thermostat/controller
-- Prime fuel system, run and verify heat output
-
-── AC UNIT ──
-(AC, air conditioner, Nomadic, Furrion, Truma, mini split, rooftop AC)
-- Cut/prep roof opening if needed — seal edges
-- Install unit, run 120V circuit from shore/inverter panel
-- Wire thermostat/controller
-- Test cooling and confirm no leaks at penetrations
-
-── TV MOUNT ──
-(TV, television, TV mount)
-- Confirm backing/stud behind mount location
-- Mount bracket, route power and HDMI
-- Hang TV, test picture and security
-
-── PLUMBING ──
-(plumbing, water pump, tank, faucet, shower, water heater, propane water heater)
-- Install/replace components per scope
-- Pressure test all connections — no leaks
-- Verify pump prime and flow
-- Test hot/cold at all fixtures
-
-── PROPANE ──
-(propane, MB Sturgis, quick disconnect, propane line, hose)
-- Install quick-disconnect or run copper line
-- Leak test all fittings with soapy water
-- Verify appliance operation
-
-── COMPOSTING TOILET ──
-(composting toilet, Cuddy Lite, Trelino, CompoCloset)
-- Mount toilet — level and secure
-- Install vent fan and route exhaust to exterior if required
-- Test operation
-
-── ROOF RACK / SOLAR ARRAY / CUSTOM FAB ──
-(aluminum frame, custom fab, aluminum platform, custom bracket, welding)
-- Fabricate per scope — confirm dimensions before cutting
-- Test fit before final weld/fastening
-- Apply sealant at all roof penetrations
-- Verify load rating and security
-
-── SUSPENSION SEALANT / ROT REPAIR ──
-(rot repair, resealing, epoxy, sealant, pirelli seal, trim repair)
-- Remove damaged material — document extent before proceeding
-- Treat/inject epoxy or apply sealant per scope
-- Allow full cure time before closing up
-- Verify water-tight before returning to customer
-
-── REPAIR (general) ──
-(repair, troubleshoot, warranty, fix, replace, swap)
-- Diagnose root cause before replacing components
-- Document findings — note any related issues found
-- Repair/replace per scope
-- Test repaired system — confirm issue resolved
-
-── FINAL QC (every job) ──
-- All installed systems tested and functional
-- All wiring inspected — no exposed terminations
-- All roof/exterior penetrations sealed
-- Customer walkthrough complete — sign-off obtained
-
-STRICT RULES (for anything not matched above):
-- Parts/products not in guide: prefix "Install" + exact product name as written
-- Labor lines: copy description verbatim, clean abbreviations only
-- Never invent tasks not stated in the invoice
-- Include quantities if listed (e.g. "Install Rich Solar 100Ah Battery x2")
-- Retail/merch items (hats, stickers, tees, koozies, MODL tools): include as "Retail sale — [item name]" under a "Retail / Accessories" category, no install steps
-- Admin items (CC fees, shipping, storage, tax, discounts): OMIT entirely
-- Final QC appears ONCE only, at the end
-
-GROUP into logical CATEGORIES and SUBCATEGORIES. Keep subcategories tight — combine related items rather than making a subcategory for every single line item.
-
-═══════════════════════════════════════════
-BOARD VIEW ("tasks") — REQUIRED, READ CAREFULLY
-═══════════════════════════════════════════
-Produce a flat "tasks" array for the shop TV board. One entry per DISTINCT job type present on the invoice. Each entry:
+Each entry:
 - "category": short job name (e.g. "Solar Panels", "Truck Side Charging", "Airbags")
-- "steps": the KEY actions as ONE single line, comma-separated, lowercase, no trailing period. Milestones a tech scans at a glance — NOT every sub-step. Aim for 2–6 items.
+- "steps": the KEY actions as ONE single line, comma-separated, lowercase, no trailing period. Milestones a tech scans at a glance — NOT full procedures. Aim for 2–6 items (airbags is the one long exception below).
+- "hours": the estimated hours for that job type as a plain number (e.g. 1.5), taken ONLY from the invoice text — install labor line items typically break the total down per job. Match each stated time to its job type. If the invoice does not state hours for a job, set "hours" to null. NEVER invent, guess, or estimate hours yourself. Final QC is always null.
 
 Use these EXACT step lines when the matching work is on the invoice (TCG standard wording):
 - Truck Side Charging → "wire alternator, route to rear, install Anderson connector"
@@ -690,28 +483,51 @@ Use these EXACT step lines when the matching work is on the invoice (TCG standar
 - Battery Swap → "remove old battery, reinstall new battery"
 - Airbags → "lift vehicle, remove rear wheels, lower axle, install brackets on axle, install brackets on frame, mount airbags to two brackets, raise axle, mount airbags to upper brackets, tie in airlines"
 - Airbag Air Compressor → "wire from battery, mount compressor, run airlines"
-- Timbrens / Sumo Springs → use "remove factory bump stops, install Timbrens" OR "remove factory bump stops, install Sumo Springs" depending on which product is on the invoice. Use the exact product named. If both appear, list both installs.
+- Timbrens / Sumo Springs → use "remove factory bump stops, install Timbrens" OR "remove factory bump stops, install Sumo Springs" depending on which product is on the invoice. Use the exact product named — never guess. If both appear, list both installs.
 
-DYNAMIC RULE: for Timbrens/Sumo Springs, the product name in the step must match what is actually on the invoice — never guess.
+For job types NOT in the list above, use this REFERENCE GUIDE to know the key milestones, then compress them into one terse comma line in the same lowercase style:
 
-For job types NOT in the exact list above, write your own terse comma line in the same lowercase, milestone-only style, derived from the detailed steps. The "tasks" entries should line up with the detailed categories but be far shorter.
+── CAMPER INSTALL / BED PREP ── (camper unit, bed mat, Scout/Lance/FWC delivery): lay bed mat, load camper, confirm alignment, secure anchor points
+── TORKLIFT TIE-DOWNS ── (TorkLift, Talon, ApexAnchors): confirm fit, bolt receivers to frame, verify all 4 points
+── TURNBUCKLES ── (FastGun, SpringLoad XL): hang from anchor points, tension to 300 lbs, install locks
+── STABLELOAD ── (StableLoad): confirm fitment, install per spec, test load response
+── 7-WAY RV CABLE & IN-BED PLUG ── (7-way, in-bed plug, brake light wiring): route cable in bed, install in-bed plug, connect truck wiring, test circuits
+── LITHIUM BATTERY ── (Dakota Lithium, Expion, Battle Born, LiFePO4): mount battery, fuse within 18in, wire to busbar, set LiFePO4 profile
+── ROOF ENTRY GLAND ── (roof gland, cable entry): drill to spec, install gland with butyl, route cable with drip loop
+── INVERTER ── (pure sine, Rich Solar Nova, Victron, AIMS): mount near battery, fuse DC input, wire AC output, test under load
+── TRANSFER SWITCH / SHORE POWER ──: install transfer switch, wire inputs and output, test all modes
+── FUSE BLOCK / DISTRIBUTION ── (Blue Sea, busbar): mount and label, fuse feed wire, test circuits
+── BATTERY MONITOR / SHUNT ── (Victron BMV, SmartShunt): install shunt on negative, wire display, configure settings
+── WIRING / HARDWARE (generic) ──: size and crimp wire, route in loom, label circuits
+── STARLINK MINI ──: check obstruction, mount dish, route cable, connect 12V and verify
+── BACKUP / DASH CAMERA ── (WolfBox): mount cameras, route cables, connect power, test views
+── ROOF RACK / CROSSBARS ── (Yakima, Rhino-Rack, Thule): confirm fitment, mount and seal feet, torque to spec
+── AWNING ── (Kammock, 270): fab brackets as needed, mount awning, test operation
+── MAXXAIR / ROOF FAN ──: remove old vent, install fan with butyl, wire and test
+── DIESEL HEATER ── (Espar, RADICA): mount heater and tank, route exhaust, connect fuel and power, test heat
+── AC UNIT ── (Nomadic, Furrion, Truma): prep roof opening, install unit, run 120V, test cooling
+── TV MOUNT ──: confirm backing, mount bracket, route power, test
+── PLUMBING ── (pump, tank, faucet, water heater): install per scope, pressure test, verify flow
+── PROPANE ── (MB Sturgis, quick disconnect): install line or QD, leak test fittings, verify appliance
+── COMPOSTING TOILET ── (Cuddy, Trelino): mount toilet, install vent, test
+── CUSTOM FAB ── (aluminum frame, brackets, welding): fab per scope, test fit, seal penetrations, verify load
+── ROT REPAIR / RESEAL ── (epoxy, sealant, trim): remove damaged material, treat and seal, cure, verify water-tight
+── REPAIR (general) ── (troubleshoot, warranty, fix): diagnose root cause, repair per scope, test and confirm fixed
 
-═══════════════════════════════════════════
+STRICT RULES:
+- One "tasks" entry per distinct job type — do NOT make an entry per line item
+- Parts not in guide: category from product type, steps = "install [product name]" plus obvious milestones
+- Never invent work not stated in the invoice
+- TCG does NOT do suspension lifts, spring swaps, or shock replacements. If present: category "Referral", steps "refer to north county spring — outside tcg scope"
+- Retail/merch items (hats, stickers, tees, koozies): category "Retail / Accessories", steps "retail sale — [item names]"
+- Admin items (CC fees, shipping, storage, tax, discounts): OMIT entirely
+- Always end with one final entry: category "Final QC", steps "test all systems, inspect wiring, verify penetrations sealed, customer walkthrough"
+
 OUTPUT — return ONLY valid JSON, no markdown, no explanation:
 {
   "tasks": [
-    { "category": "Solar Panels", "steps": "install z clips on panel, install panel on roof, seal penetrations, install solar gland, drop wires into camper" }
-  ],
-  "categories": [
-    {
-      "cat": "Category Name",
-      "subs": [
-        {
-          "name": "Subcategory Name",
-          "items": ["Task item 1", "Task item 2"]
-        }
-      ]
-    }
+    { "category": "Solar Panels", "steps": "install z clips on panel, install panel on roof, seal penetrations, install solar gland, drop wires into camper", "hours": 2.5 },
+    { "category": "Final QC", "steps": "test all systems, inspect wiring, verify penetrations sealed, customer walkthrough", "hours": null }
   ]
 }
 
@@ -729,12 +545,9 @@ ${invoiceText}`;
     const raw    = data.content?.find(b => b.type === 'text')?.text || '';
     const clean  = raw.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
-    const tasks  = (Array.isArray(parsed.tasks) && parsed.tasks.length)
-      ? parsed.tasks
-      : deriveBoardTasks(parsed.categories);
-    lastParsed = { customer, vehicle, tech, tasks, categories:parsed.categories, timestamp:Date.now() };
-    renderBoardPreview(tasks);
-    renderJobCard(customer, vehicle, tech, parsed.categories);
+    if (!Array.isArray(parsed.tasks) || !parsed.tasks.length) throw new Error('No tasks returned — try again');
+    lastParsed = { customer, vehicle, tech, tasks: parsed.tasks, timestamp: Date.now() };
+    renderJobCard(customer, vehicle, tech, parsed.tasks);
     setStatus('Done — ready to send to job board.', 'done');
     document.getElementById('btn-push').disabled = false;
   } catch (err) {
@@ -744,52 +557,52 @@ ${invoiceText}`;
   document.getElementById('btn-parse').disabled = false;
 }
 
-// Fallback: collapse detailed categories into one condensed board line each
-function deriveBoardTasks(categories) {
-  return (categories || []).map(c => ({
-    category: c.cat,
-    steps: (c.subs || [])
-      .flatMap(s => s.items || [])
-      .filter(Boolean)
-      .slice(0, 6)
-      .join(', ')
-  }));
+// The job card IS the board view — same tasks, same wording, everywhere.
+function fmtHours(h) {
+  const n = parseFloat(h);
+  if (isNaN(n)) return null;
+  return (n % 1 === 0 ? n.toFixed(0) : n.toFixed(2).replace(/0$/,'')) + (n === 1 ? ' hr' : ' hrs');
+}
+function totalHours(tasks) {
+  let sum = 0, any = false;
+  (tasks || []).forEach(t => { const n = parseFloat(t.hours); if (!isNaN(n)) { sum += n; any = true; } });
+  return any ? sum : null;
 }
 
-function renderBoardPreview(tasks) {
-  const wrap = document.getElementById('board-preview');
-  const grid = document.getElementById('bp-grid');
-  if (!tasks || !tasks.length) { wrap.style.display = 'none'; return; }
-  grid.innerHTML = tasks.map(t => `
-    <div class="bp-task">
-      <div class="bp-cat">${esc(t.category || 'Task')}</div>
-      <div class="bp-steps">${esc(t.steps || '')}</div>
-    </div>`).join('');
-  wrap.style.display = 'block';
-}
-
-function renderJobCard(customer, vehicle, tech, categories) {
+function renderJobCard(customer, vehicle, tech, tasks) {
+  const tot = totalHours(tasks);
   document.getElementById('result-header-fields').innerHTML = `
     <div class="job-info-item"><div class="label">Customer</div><div class="value">${esc(customer)}</div></div>
     <div class="job-info-item"><div class="label">Vehicle</div><div class="value">${esc(vehicle)}</div></div>
     <div class="job-info-item"><div class="label">Tech</div><div class="value">${esc(tech)}</div></div>
+    ${tot != null ? `<div class="job-info-item"><div class="label">Est. Total</div><div class="value">${fmtHours(tot)}</div></div>` : ''}
   `;
-  const body = document.getElementById('result-body');
-  body.innerHTML = '';
-  categories.forEach(section => {
-    const catEl = document.createElement('div'); catEl.className = 'category';
-    catEl.innerHTML = `<div class="cat-title">${esc(section.cat)}</div>`;
-    section.subs.forEach(sub => {
-      const subEl = document.createElement('div'); subEl.className = 'subcategory';
-      subEl.innerHTML = `<div class="sub-title">${esc(sub.name)}</div>`;
-      const ul = document.createElement('ul'); ul.className = 'items';
-      sub.items.forEach(item => { const li = document.createElement('li'); li.textContent = item; ul.appendChild(li); });
-      subEl.appendChild(ul); catEl.appendChild(subEl);
-    });
-    body.appendChild(catEl);
-  });
+  document.getElementById('result-body').innerHTML = renderTaskTiles(tasks);
   document.getElementById('result-empty').style.display = 'none';
   document.getElementById('result-wrap').style.display  = 'block';
+}
+
+function renderTaskTiles(tasks) {
+  return (tasks || []).map(t => {
+    const h = fmtHours(t.hours);
+    return `
+    <div class="task-tile">
+      <div class="t-cat">${esc(t.category || 'Task')}${h ? `<span class="t-hrs">${h}</span>` : ''}</div>
+      <div class="t-steps">${esc(t.steps || '')}</div>
+    </div>`;
+  }).join('');
+}
+
+// Old-format history entries (categories → subs → items) get flattened to task lines
+function tasksFrom(jobData) {
+  if (Array.isArray(jobData.tasks)) return jobData.tasks;
+  if (Array.isArray(jobData.categories)) {
+    return jobData.categories.map(c => ({
+      category: c.cat || 'Task',
+      steps: (c.subs || []).flatMap(s => s.items || []).filter(Boolean).join(', ')
+    }));
+  }
+  return [];
 }
 
 function openSlotPicker() {
@@ -960,35 +773,25 @@ function buildHistoryEntry(pushId, jobData) {
   hdr.appendChild(meta); hdr.appendChild(acts); entry.appendChild(hdr);
 
   const body = document.createElement('div'); body.className = 'h-entry-body';
-  const cardGrid = document.createElement('div'); cardGrid.className = 'h-card-grid';
+  const taskList = document.createElement('div'); taskList.className = 'h-task-list';
 
-  (jobData.categories||[]).forEach((sec, catIdx) => {
-    const catEl = document.createElement('div'); catEl.className = 'h-category';
-    const catTitle = document.createElement('div'); catTitle.className = 'h-cat-title'; catTitle.textContent = sec.cat;
-    catEl.appendChild(catTitle);
-    sec.subs.forEach((sub, subIdx) => {
-      const subEl = document.createElement('div'); subEl.className = 'h-subcategory';
-      const subTitle = document.createElement('div'); subTitle.className = 'h-sub-title'; subTitle.textContent = sub.name;
-      subEl.appendChild(subTitle);
-      const ul = document.createElement('ul'); ul.className = 'h-items';
-      sub.items.forEach((item, itemIdx) => {
-        const itemKey = `${catIdx}-${subIdx}-${itemIdx}`;
-        const li = document.createElement('li'); li.className = 'h-item-row'; li.dataset.itemKey = itemKey;
-        const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'h-item-check';
-        const bullet = document.createElement('span'); bullet.className = 'h-item-bullet'; bullet.textContent = '–';
-        const txt = document.createElement('span'); txt.className = 'h-item-text'; txt.textContent = item;
-        cb.addEventListener('change', () => {
-          txt.classList.toggle('checked', cb.checked);
-          bullet.classList.toggle('faded', cb.checked);
-          if (window.setHistoryChecked) window.setHistoryChecked(pushId, itemKey, cb.checked);
-        });
-        li.appendChild(cb); li.appendChild(bullet); li.appendChild(txt); ul.appendChild(li);
-      });
-      subEl.appendChild(ul); catEl.appendChild(subEl);
+  const tasks = tasksFrom(jobData);
+  tasks.forEach((t, idx) => {
+    const itemKey = `t-${idx}`;
+    const row = document.createElement('div'); row.className = 'h-task-row'; row.dataset.itemKey = itemKey;
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'h-task-check';
+    const txt = document.createElement('div'); txt.className = 'h-task-text';
+    const cat = document.createElement('div'); cat.className = 'h-task-cat'; cat.textContent = t.category || 'Task';
+    const steps = document.createElement('div'); steps.className = 'h-task-steps'; steps.textContent = t.steps || '';
+    txt.appendChild(cat); txt.appendChild(steps);
+    cb.addEventListener('change', () => {
+      row.classList.toggle('checked', cb.checked);
+      if (window.setHistoryChecked) window.setHistoryChecked(pushId, itemKey, cb.checked);
     });
-    cardGrid.appendChild(catEl);
+    row.appendChild(cb); row.appendChild(txt); taskList.appendChild(row);
   });
-  body.appendChild(cardGrid); entry.appendChild(body);
+
+  body.appendChild(taskList); entry.appendChild(body);
 
   let listenerSetup = false;
   hdr.addEventListener('click', () => {
@@ -998,15 +801,12 @@ function buildHistoryEntry(pushId, jobData) {
       listenerSetup = true;
       if (window.listenHistoryChecked) {
         window.listenHistoryChecked(pushId, (checkedData) => {
-          body.querySelectorAll('.h-item-row[data-item-key]').forEach(li => {
-            const key = li.dataset.itemKey;
-            const cb  = li.querySelector('.h-item-check');
-            const t   = li.querySelector('.h-item-text');
-            const b   = li.querySelector('.h-item-bullet');
+          body.querySelectorAll('.h-task-row[data-item-key]').forEach(row => {
+            const key = row.dataset.itemKey;
+            const cb  = row.querySelector('.h-task-check');
             const isChecked = !!checkedData[key];
             if (cb) cb.checked = isChecked;
-            if (t)  t.classList.toggle('checked', isChecked);
-            if (b)  b.classList.toggle('faded', isChecked);
+            row.classList.toggle('checked', isChecked);
           });
         });
       }
@@ -1020,15 +820,16 @@ function printHistoryJob(jobData) {
     ? new Date(jobData.timestamp).toLocaleDateString('en-US',
         { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' })
     : '';
-  const categoriesHtml = (jobData.categories||[]).map(sec => `
-    <div class="category">
-      <div class="cat-title">${esc(sec.cat)}</div>
-      ${sec.subs.map(sub => `
-        <div class="subcategory">
-          <div class="sub-title">${esc(sub.name)}</div>
-          <ul class="items">${sub.items.map(it => `<li>${esc(it)}</li>`).join('')}</ul>
-        </div>`).join('')}
-    </div>`).join('');
+  const tasks = tasksFrom(jobData);
+  const tot = totalHours(tasks);
+  const tilesHtml = tasks.map(t => {
+    const h = fmtHours(t.hours);
+    return `
+    <div class="task-tile">
+      <div class="t-cat">${esc(t.category || 'Task')}${h ? `<span class="t-hrs">${h}</span>` : ''}</div>
+      <div class="t-steps">${esc(t.steps || '')}</div>
+    </div>`;
+  }).join('');
   const win = window.open('', '_blank');
   win.document.write(`<!DOCTYPE html>
 <html><head>
@@ -1038,17 +839,27 @@ function printHistoryJob(jobData) {
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'DM Sans',sans-serif;color:#111;background:white;padding:.25in}
   .ts{font-family:'DM Mono',monospace;font-size:.52rem;color:#888;text-align:right;margin-bottom:5px}
-  .job-header{background:#f5f5f5;border:.5px solid #ccc;border-bottom:none;padding:7px 12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .job-header{background:#f5f5f5;border:.5px solid #ccc;border-bottom:none;padding:7px 12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px}
   .label{font-family:'DM Mono',monospace;font-size:.5rem;text-transform:uppercase;letter-spacing:.08em;color:#888;display:block}
   .value{font-family:'Bebas Neue',sans-serif;font-size:.88rem;letter-spacing:.06em;display:block}
-  .job-body{border:.5px solid #ccc;padding:8px 12px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px 10px;align-items:start}
-  .category{break-inside:avoid}
-  .cat-title{font-family:'DM Mono',monospace;font-size:.52rem;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#2a7a6a;border-bottom:.5px solid #ddd;padding-bottom:2px;margin-bottom:4px}
-  .subcategory{margin-bottom:4px}
-  .sub-title{font-size:.58rem;font-weight:600;color:#555;margin-bottom:2px}
-  .items{list-style:none;padding-left:6px}
-  .items li{display:flex;align-items:flex-start;gap:3px;font-size:.55rem;color:#333;line-height:1.4}
-  .items li::before{content:'–';color:#c8763a;flex-shrink:0}
+  .job-body{border:.5px solid #ccc;padding:10px 12px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px;align-items:start}
+  .task-tile{border:.5px solid #bbb;border-radius:2px;overflow:hidden;break-inside:avoid}
+  .t-cat{background:#f5f5f5;color:#2a7a6a;font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-bottom:.5px solid #ddd}
+  .t-hrs{float:right;color:#555;font-size:.5rem;text-transform:none}
+  .t-steps{padding:6px 8px;font-size:.62rem;color:#333;line-height:1.5}
+  .print-worksheet{margin-top:10px;break-inside:avoid}
+  .ws-times{display:flex;gap:18px;align-items:flex-end;border:.5px solid #bbb;border-radius:2px;padding:8px 10px;margin-bottom:8px}
+  .ws-field{display:flex;align-items:flex-end;gap:6px}
+  .ws-label{font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;color:#555}
+  .ws-line{display:inline-block;width:90px;border-bottom:.5px solid #333;height:12px}
+  .ws-check{margin-left:auto;display:flex;align-items:center;gap:6px}
+  .ws-box{display:inline-block;width:11px;height:11px;border:1px solid #333;border-radius:1px}
+  .ws-bottom{display:grid;grid-template-columns:1fr 220px;gap:16px;align-items:end}
+  .ws-notes .ws-label{display:block;margin-bottom:4px}
+  .ws-nline{border-bottom:.5px solid #999;height:16px}
+  .ws-sign{display:flex;flex-direction:column;gap:12px}
+  .ws-sig{display:flex;flex-direction:column;gap:2px}
+  .ws-sigline{display:block;border-bottom:.5px solid #333;height:16px;width:100%}
   @page{size:landscape;margin:.3in}
 </style>
 </head><body>
@@ -1057,8 +868,27 @@ function printHistoryJob(jobData) {
   <div><span class="label">Customer</span><span class="value">${esc(jobData.customer||'—')}</span></div>
   <div><span class="label">Vehicle</span><span class="value">${esc(jobData.vehicle||'—')}</span></div>
   <div><span class="label">Tech</span><span class="value">${esc(jobData.tech||'—')}</span></div>
+  ${tot != null ? `<div><span class="label">Est. Total</span><span class="value">${fmtHours(tot)}</span></div>` : ''}
 </div>
-<div class="job-body">${categoriesHtml}</div>
+<div class="job-body">${tilesHtml}</div>
+<div class="print-worksheet">
+  <div class="ws-times">
+    <div class="ws-field"><span class="ws-label">Start time</span><span class="ws-line"></span></div>
+    <div class="ws-field"><span class="ws-label">End time</span><span class="ws-line"></span></div>
+    <div class="ws-field"><span class="ws-label">Actual time to complete</span><span class="ws-line"></span></div>
+    <div class="ws-check"><span class="ws-box"></span><span class="ws-label">Pictures sent</span></div>
+  </div>
+  <div class="ws-bottom">
+    <div class="ws-notes">
+      <div class="ws-label">Notes — delays, extra work, issues</div>
+      <div class="ws-nline"></div><div class="ws-nline"></div><div class="ws-nline"></div><div class="ws-nline"></div>
+    </div>
+    <div class="ws-sign">
+      <div class="ws-sig"><span class="ws-sigline"></span><span class="ws-label">Tech signature</span></div>
+      <div class="ws-sig"><span class="ws-sigline"></span><span class="ws-label">Date completed</span></div>
+    </div>
+  </div>
+</div>
 <script>window.onload=function(){window.print();window.onafterprint=function(){window.close();};}<\/script>
 </body></html>`);
   win.document.close();
@@ -1075,7 +905,6 @@ function clearAll() {
   ['f-customer','f-vehicle','f-tech'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('result-empty').style.display = 'block';
   document.getElementById('result-wrap').style.display  = 'none';
-  document.getElementById('board-preview').style.display = 'none';
   document.getElementById('btn-push').disabled = true;
   lastParsed = null; setStatus('','');
 }
